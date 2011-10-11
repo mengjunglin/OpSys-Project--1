@@ -1,8 +1,8 @@
-//Operating System FALL2011
-//Project1
-//Tiffany Milano & Meng Jung Lin
-//main.cpp
+// Tiffany Milano and Meng Jung Lin 
+// Project 1 - Operating Systems 
+// October 20th 2011
 
 int main()
 {
+  cout << "<3333"; 
 }
