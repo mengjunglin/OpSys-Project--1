@@ -8,8 +8,6 @@ using namespace std;
 
 int main()
 {
-	//okay, now I know how to upload
-	//trying to download now...
 	cout << "Hello World" << endl;
 
 	Sim simulation;
