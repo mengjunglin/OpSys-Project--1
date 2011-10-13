@@ -20,7 +20,12 @@ int elapstedTime = 0;
 
 int main(int argc, char * argv[])
 {	
-	Sim p[20];	// An array which holds all the processes
+	if(argc > 3) { 
+		cout << "Error: too many arguments, enter either 1 or 2 arguments."; 
+		return 1; 
+	}
+	
+	Sim p[20];	// An array which holds all the processes default of 20 processes
 	srand(time(0)); // the seed value for the random number generator
 	int time = 0; 
 	/* the for loop creates the dummy processes that will be sent 
