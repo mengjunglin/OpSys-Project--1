@@ -1,3 +1,7 @@
+// Tiffany Milano and Meng Jung Lin 
+// Project 1 - Operating Systems 
+// October 20th 2011
+
 #include <iostream>
 using namespace std;
 
@@ -12,7 +16,7 @@ private:
 
 public: 
 	Sim(); 
-	Sim( int pId, int cTime, int p, int iTime, int turnTime, int totalTime ); 
+	Sim( int pId, int cTime, int p ); 
 	void setiTime( int iTime ); 
 	void setTurnTime( int turnTime ); 
 	void setTotalTime( int totalTime ); 
@@ -33,10 +37,11 @@ Sim::Sim(){
 	totalWaitTime = 0; 
 }
 
-Sim::Sim( int pId, int cTime, int p, int iTime, int turnTime, int totalTime ){
+Sim::Sim( int pId, int cTime, int p ){
 	processId = pId; 
 	cpuTime = cTime; 
 	priority = p; 
+	// Set the initial times to 0
 	initialWaitTime = 0; 
 	turnAroundTime = 0; 
 	totalWaitTime = 0; 
