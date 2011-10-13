@@ -41,8 +41,8 @@ int main(int argc, char * argv[])
 	int time = 0; 
 	for (int i = 0; i < 20; i++)
 	{
-		int cpuTime = rand() % 7000 + 500;
-		int priority = rand() % 5; 
+		int cpuTime = rand() % 7000 + 500; // This generates a random number between 500 - 7500
+		int priority = rand() % 5; // this generates a random number between 1 and 4 
 		Sim process(i, cpuTime, priority ); 
 		p[i] = process; 
 		
