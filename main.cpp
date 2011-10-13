@@ -23,6 +23,10 @@ int main(int argc, char * argv[])
 	Sim p[20];	// An array which holds all the processes
 	srand(time(0)); // the seed value for the random number generator
 	int time = 0; 
+	/* the for loop creates the dummy processes that will be sent 
+	 * into the functions for testing the algorithms. The for loop
+	 * will create the process by giving it a random CPU time and 
+	 * priority number */ 
 	for (int i = 0; i < 20; i++)
 	{
 		int cpuTime = rand() % 7000 + 500;  // This generates a random number between 500 - 7500
@@ -31,16 +35,14 @@ int main(int argc, char * argv[])
 		p[i] = process; 
 		
 		cout << "[time " << time << "ms] Process " << i+1 << " created (requiring " << cpuTime << "ms CPU time)\n"; 
-		
-		// Send the processes to the different functions 
-		fcfs(p); 
-		sjf(p); 
-		psjf(p); 
-		rr(p); 
-		pp(p); 
-	
 	}
 	
+	// Send the processes to the different functions 
+	fcfs(p); 
+	sjf(p); 
+	psjf(p); 
+	rr(p); 
+	pp(p); 
 
 	
 	/* 1. Process creation (display the process ID, required CPU time, and priority, if applicable) - DONE
