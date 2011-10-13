@@ -31,11 +31,11 @@ int main(int argc, char * argv[])
 	}
 	
 
-	/*
-	1. Process creation (display the process ID, required CPU time, and priority, if applicable)
-	2. Context switch (display the two before/after process IDs involved)
-	3. Process's first CPU usage (display the process ID and initial wait time)
-	4. Process termination (display the process ID, its turnaround time, and its total wait time)*/ 
+	
+	/* 1. Process creation (display the process ID, required CPU time, and priority, if applicable)
+	 * 2. Context switch (display the two before/after process IDs involved)
+	 * 3. Process's first CPU usage (display the process ID and initial wait time)
+	 * 4. Process termination (display the process ID, its turnaround time, and its total wait time)*/ 
 
 
 	system("pause");
