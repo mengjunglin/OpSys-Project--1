@@ -4,7 +4,7 @@
 
 
 #include <iostream> 
-#include "Sim.h"
+#include "classSim.h"
 
 int main()
 {
