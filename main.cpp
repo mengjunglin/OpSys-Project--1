@@ -65,7 +65,9 @@ void fcfs(Sim* p)
 	
 }
 
-// Shortest-Job First (SFS)
+/* Shortest-Job First (SFS)
+ * This will sort the processes that are sent in based on the 
+ * shortest job in the array. */ 
 void sjf(Sim* p)
 {
 }
