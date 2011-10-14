@@ -10,31 +10,34 @@ private:
 	int processId; 
 	int cpuTime; 
 	int priority; 
-	int initialWaitTime; 
+//	int initialWaitTime; 
 	int turnAroundTime; 
-	int totalWaitTime; 
+//	int totalWaitTime;
+	int waitTime;
 
 public: 
 	Sim(); 
 	Sim( int pId, int cTime, int p ); 
-	void setiTime( int iTime ); 
+//	void setiTime( int iTime ); 
 	void setTurnTime( int turnTime ); 
-	void setTotalTime( int totalTime ); 
+//	void setTotalTime( int totalTime ); 
+	void setWaitTime(int wTime);
 	int getpId(); 
 	int getcTime(); 
 	int getP(); 
-	int getITime(); 
+//	int getITime(); 
 	int getTurnTime(); 
-	int getTotalTime(); 
+//	int getTotalTime(); 
+	int getWaitTime();
 };
 
 Sim::Sim(){ 
 	processId = 0; 
 	cpuTime = 0; 
 	priority = 0; 
-	initialWaitTime = 0; 
+//	initialWaitTime = 0; 
 	turnAroundTime = 0; 
-	totalWaitTime = 0; 
+//	totalWaitTime = 0; 
 }
 
 Sim::Sim( int pId, int cTime, int p ){
@@ -42,21 +45,26 @@ Sim::Sim( int pId, int cTime, int p ){
 	cpuTime = cTime; 
 	priority = p; 
 	// Set the initial times to 0
-	initialWaitTime = 0; 
+//	initialWaitTime = 0; 
 	turnAroundTime = 0; 
-	totalWaitTime = 0; 
+//	totalWaitTime = 0; 
+	waitTime = 0;
 }
 
-void Sim::setiTime( int iTime ){ 
+/*void Sim::setiTime( int iTime ){ 
 	initialWaitTime = iTime; 
-}
+}*/
 
 void Sim::setTurnTime( int turnTime ){ 
 	turnAroundTime = turnTime; 
 } 
 
-void Sim::setTotalTime( int totalTime ){ 
+/*void Sim::setTotalTime( int totalTime ){ 
 	totalWaitTime = totalTime; 
+}*/
+
+void Sim::setWaitTime(int wTime){
+	waitTime = wTime;
 }
 
 int Sim::getpId(){ 
@@ -71,16 +79,20 @@ int Sim::getP(){
 	return priority; 
 }
 
-int Sim::getITime(){
+/*int Sim::getITime(){
 	return initialWaitTime; 
-}
+}*/
 
 int Sim::getTurnTime(){ 
 	return turnAroundTime; 
 }
 
-int Sim::getTotalTime(){ 
+/*int Sim::getTotalTime(){ 
 	return totalWaitTime; 
+}*/
+
+int Sim::getWaitTime(){
+	return waitTime;
 }
 
 

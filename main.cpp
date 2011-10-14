@@ -69,7 +69,16 @@ int main(int argc, char * argv[])
  * process in is the first process to run and terminate */ 
 void fcfs(Sim* p)
 {
-	
+	int tempWait = 0;
+	for (int i = 0; i < 20; i++)
+	{
+		if (i != 0)
+		{
+			tempWait += p[i-1].getcTime();
+			p[i].setWaitTime(tempWait);
+		}
+		cout << "Wait time is: " << p[i].getWaitTime() << endl;
+	}
 }
 
 /* Shortest-Job First (SFS)
