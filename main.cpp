@@ -15,7 +15,7 @@ void rr(Sim* p);    // Round-Robin (RR)
 void pp(Sim* p);    // Preemptive Priority (PP) 
 
 // Simulate elapsed time using a global variable 
-int elapstedTime = 0; 
+int elapsedTime = 0; 
 
 
 int main(int argc, char * argv[])
@@ -26,8 +26,7 @@ int main(int argc, char * argv[])
 	}
 	
 	Sim p[20];	// An array which holds all the processes default of 20 processes
-	srand(time(0)); // the seed value for the random number generator
-	int time = 0; 
+	srand(time(0)); // the seed value for the random number generator 
 	/* the for loop creates the dummy processes that will be sent 
 	 * into the functions for testing the algorithms. The for loop
 	 * will create the process by giving it a random CPU time and 
@@ -37,9 +36,7 @@ int main(int argc, char * argv[])
 		int cpuTime = rand() % 7000 + 500;  // This generates a random number between 500 - 7500
 		int priority = rand() % 5; 	    // this generates a random number between 0 and 4 
 		Sim process(i, cpuTime, priority ); 
-		p[i] = process; 
-		
-		cout << "[time " << time << "ms] Process " << i+1 << " created (requiring " << cpuTime << "ms CPU time)\n"; 
+		p[i] = process;  
 	}
 	
 	// Send the processes to the different functions 
@@ -70,15 +67,40 @@ int main(int argc, char * argv[])
 void fcfs(Sim* p)
 {
 	int tempWait = 0;
+	int eTemp;
+	// elapsedTime = 0; // Clear out the Global Variable "elapsedTime" 
+
+	/* This for loop sets the inital times for each process and 
+	 * prints it's "create" statement */ 
+	cout << "Create Processes: \n"; 
 	for (int i = 0; i < 20; i++)
 	{
 		if (i != 0)
 		{
 			tempWait += p[i-1].getcTime();
 			p[i].setWaitTime(tempWait);
+			p[i].setiTime(tempWait); 
 		}
-		cout << "Wait time is: " << p[i].getWaitTime() << endl;
+
+		eTemp = tempWait + p[i].getcTime();
+		p[i].setTerminateTime( eTemp );
+		p[i].setTurnTime( eTemp ); 
+		cout << "[time " << elapsedTime << "ms] Process " << i+1 << " created (requiring " << p[i].getcTime() << "ms CPU time)\n";
 	}
+
+	cout << "\n\n\nFirst-Come-First-Served | Send Processes to CPU and run: \n"; 
+	
+	for(int j = 0; j < 20; j++) 
+	{ 
+		if (j != 0)
+		{
+			cout << "[time " << p[j].getWaitTime() << "ms] Context switch (swapped out process " << j << " for " << j+1 << ")\n";
+		}
+		cout << "[time " << p[j].getWaitTime() << "ms] Process " << j+1 << " access CPU for the first time (wait time " << p[j].getITime() << "ms)\n";	
+		cout << "[time " << p[j].getTerminateTime() << "ms] Process " << j+1 << " terminated (turnaround time " << p[j].getTurnTime() << "ms, wait time " << p[j].getWaitTime() << "ms)\n"; 
+	}
+
+	cout << "\n\n\n"; 
 }
 
 /* Shortest-Job First (SFS)
