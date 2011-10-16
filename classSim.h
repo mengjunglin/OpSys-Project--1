@@ -14,6 +14,7 @@ private:
 	int turnAroundTime; 
 	int terminateTime;
 	int waitTime;
+	int timeRemain;
 
 public: 
 	Sim(); 
@@ -22,6 +23,7 @@ public:
 	void setTurnTime( int turnTime ); 
 	void setTerminateTime( int terTime ); 
 	void setWaitTime(int wTime);
+	void setTimeRemain(int tRemain);
 	int getpId(); 
 	int getcTime(); 
 	int getP(); 
@@ -29,6 +31,7 @@ public:
 	int getTurnTime(); 
 	int getTerminateTime(); 
 	int getWaitTime();
+	int getTimeRemain();
 };
 
 Sim::Sim(){ 
@@ -37,7 +40,8 @@ Sim::Sim(){
 	priority = 0; 
 	initialWaitTime = 0; 
 	turnAroundTime = 0; 
-	terminateTime = 0; 
+	terminateTime = 0;
+	timeRemain = 0;
 }
 
 Sim::Sim( int pId, int cTime, int p ){
@@ -49,6 +53,7 @@ Sim::Sim( int pId, int cTime, int p ){
 	turnAroundTime = 0; 
 	terminateTime = 0; 
 	waitTime = 0;
+	timeRemain = 0;
 }
 
 void Sim::setiTime( int iTime ){ 
@@ -65,6 +70,10 @@ void Sim::setTerminateTime( int terTime ){
 
 void Sim::setWaitTime(int wTime){
 	waitTime = wTime;
+}
+
+void Sim::setTimeRemain(int tRemain){
+	timeRemain = tRemain;
 }
 
 int Sim::getpId(){ 
@@ -93,6 +102,10 @@ int Sim::getTerminateTime(){
 
 int Sim::getWaitTime(){
 	return waitTime;
+}
+
+int Sim::getTimeRemain(){
+	return timeRemain;
 }
 
 
