@@ -244,6 +244,4 @@ void printCPUFirstTime(Sim* p, int size){
 void printTerminate(Sim* p, int size){
 
 }
-
-
 #endif
