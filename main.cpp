@@ -12,6 +12,8 @@
 
 using namespace std;
 
+Sim* createProcesses(const int size); 
+
 void fcfs(Sim* p, int size);  // First-Come First Served(FCFS)
 void sjf(Sim* p, int size);   // Shortest-Job First (SFS)
 void psjf(Sim* p, int size);  // Preemptive Shortest-Job First (SJF)
@@ -44,39 +46,18 @@ int main(int argc, char * argv[])
 		return 1; 
 	}
 
-	
-	Sim pArr[n];	// An array which holds all the processes default of 20 processes
-	srand(time(0)); // the seed value for the random number generator 
-	/* the for loop creates the dummy processes that will be sent 
-	 * into the functions for testing the algorithms. The for loop
-	 * will create the process by giving it a random CPU time and 
-	 * priority number */ 
-	for (int i = 0; i < n; i++)
-	{
-		int cpuTime = rand() % 7000 + 500;  // This generates a random number between 500 - 7500
-		int priority = rand() % 5; 	    // this generates a random number between 0 and 4 
-		Sim process(i+1, cpuTime, priority ); 
-		pArr[i] = process;  
-	}
+	Sim* pArr; 
+	pArr = createProcesses(n); 
+
 	
 	/* if there is two arguments then check to compare the arguments with the
 	 * specific functions if it does not compare return 1 with an error */ 
 	if(argc == 2) {  
-		if((string)argv[1] == "fcfs") { 
-			fcfs(pArr, n); 
-		} 
-		else if((string)argv[1] == "sjf"){
-			sjf(pArr, n); 
-		}
-		else if((string)argv[1] == "psjf"){
-			psjf(pArr, n); 
-		} 
-		else if((string)argv[1] == "rr"){
-			rr(pArr, n); 
-		} 
-		else if((string)argv[1] == "pp"){
-			pp(pArr, n); 
-		}
+		if((string)argv[1] == "fcfs") { fcfs(pArr, n); } 
+		else if((string)argv[1] == "sjf"){ sjf(pArr, n); }
+		else if((string)argv[1] == "psjf"){ psjf(pArr, n); } 
+		else if((string)argv[1] == "rr"){ rr(pArr, n); } 
+		else if((string)argv[1] == "pp"){ pp(pArr, n); }
 		else{ 
 			cout << "ERROR: This argument does not match any of the test functions. \nPlease use fcfs, sjf, psjf, rr, or pp as your second argument.\n"; 
 			system("pause"); 
@@ -84,30 +65,38 @@ int main(int argc, char * argv[])
 		}
 	}
 	else {
-		// Send the processes to the different functions 
 		fcfs(pArr, n); 
 		sjf(pArr, n); 
 		psjf(pArr, n); 
 		rr(pArr, n); 
 		pp(pArr, n); 
 	}
-
-	sortProcesses(pArr, n);
-
-	
-	/* 1. Process creation (display the process ID, required CPU time, and priority, if applicable) - DONE for FCFS
-	 * 2. Context switch (display the two before/after process IDs involved) - DONE for FCFS
-	 * 3. Process's first CPU usage (display the process ID and initial wait time) - DONE for FCFS
-	 * 4. Process termination (display the process ID, its turnaround time, and its total wait time) - DONE for FCFS */ 
+	/* 1. Process creation (display the process ID, required CPU time, and priority, if applicable) - DONE for FCFS, DONE for SJF
+	 * 2. Context switch (display the two before/after process IDs involved) - DONE for FCFS, DONE for SJF
+	 * 3. Process's first CPU usage (display the process ID and initial wait time) - DONE for FCFS, DONE for SJF
+	 * 4. Process termination (display the process ID, its turnaround time, and its total wait time) - DONE for FCFS, DONE for SJF */ 
 
 	system("pause");
 	return 0;
 }
 
-/* First-Come First Served(FCFS)
- * The processes will get sent into this function and then 
- * worked on in a first-come-first-served basis so the first 
- * process in is the first process to run and terminate */ 
+Sim* createProcesses(const int size){
+	Sim* pA = new Sim[size];	// An array which holds all the processes default of 20 processes
+	srand(time(0));				// the seed value for the random number generator 
+	
+	/* the for loop creates the dummy processes that will be sent into the functions for testing the algorithms. The for loop 
+	 * will create the process by giving it a random CPU time and priority number */ 
+	for (int i = 0; i < size; i++){
+		int cpuTime = rand() % 7000 + 500;  // This generates a random number between 500 - 7500
+		int priority = rand() % 5; 	        // this generates a random number between 0 and 4 
+		Sim process(i+1, cpuTime, priority ); 
+		pA[i] = process;  
+	}
+	return pA; 
+}
+
+/* First-Come First Served(FCFS) The processes will get sent into this function and then worked on in 
+ * a first-come-first-served basis so the first process in is the first process to run and terminate */ 
 void fcfs(Sim* p, int size)
 {
 	int tempWait = 0, eTemp, minTurn = p[0].getTurnTime(), maxTurn = 0, turnT = 0, minInitial = p[0].getITime(), 
@@ -115,8 +104,7 @@ void fcfs(Sim* p, int size)
 
 	elapsedTime = 0; // Clear out the Global Variable "elapsedTime" 
 
-	/* This for loop sets the inital times for each process and 
-	 * prints it's "create" statement */ 
+	/* This for loop sets the inital times for each process and prints it's "create" statement */ 
 	cout << "Create Processes: \n"; 
 	for (int i = 0; i < size; i++)
 	{
@@ -139,11 +127,14 @@ void fcfs(Sim* p, int size)
 		if (j != 0)
 		{
 			elapsedTime = totalElapsedTime(elapsedTime); 
-			printContextSwitch(p[j].getWaitTime(), j);
+			printContextSwitch(elapsedTime, j);
 			elapsedTime = totalElapsedTime(elapsedTime); 
 		}
+		p[j].setiTime(elapsedTime);
+		p[j].setWaitTime(elapsedTime);
 		cout << "[time " << elapsedTime << "ms] Process " << j+1 << " access CPU for the first time (wait time " << p[j].getITime() << "ms)\n";	
 		elapsedTime += p[j].getcTime();
+		p[j].setTurnTime(elapsedTime);
 		cout << "[time " << elapsedTime << "ms] Process " << j+1 << " terminated (turnaround time " << p[j].getTurnTime() << "ms, wait time " << p[j].getWaitTime() << "ms)\n"; 		
 	} 
 
@@ -270,24 +261,46 @@ void rr(Sim* p, int size)
 	printProcessCreate(p, size);
 
 	cout << "\n\n\nRound-Robin with time slice 100ms | Send Processes to CPU and run: \n";
+	/* 
+		if( whatever > 0) 
+			do whatever 
+			else continue 
+		if(time == 0) terminated 
+		set location to -1
+		counter ++
+		if ( time < 0 ) 
+			counter ++; 
 
+
+		int counter = 0; 
+		counter adds up everytime we hit a negative number 
+		if counter == size 
+		then all processes are done 
+		else 
+		continue round robin and set counter back to 0
+	*/ 
 	//WHILE not all process is done(some process still have time remain), perform RR
-	for (int j = 0; j < size; j++)
+	int counter = 0; 
+	while(counter != size) 
 	{
-		t = t + 100;
-		if (p[j].getTimeRemain() != 0)
+		counter = 0; // re-set counter since counter != size in the last iteration
+		for (int j = 0; j < size; j++)
 		{
-			//remaintime = remaintime-timeslice
-			p[j].setTimeRemain( p[j].getTimeRemain() - timeSlice );
-			if (p[j].getTimeRemain() <= 0)////if remain time == 0, print "terminate"
+			t = t + 100;
+			if (p[j].getTimeRemain() != 0)
 			{
-				cout << "Process " << p[j].getpId() << "terminates";
+				//remaintime = remaintime-timeslice
+				p[j].setTimeRemain( p[j].getTimeRemain() - timeSlice );
+				if (p[j].getTimeRemain() <= 0)				//if remain time == 0, print "terminate"
+				{
+					int check = abs(p[j].getTimeRemain()); 
+					cout << "Process " << p[j].getpId() << "terminates";
+				}
+				//print"context exchange" and go to the next process
+				if (j != size-1)
+					cout << "[time " << t << "ms] Context switch (swap out process " << p[j].getpId() << " for " << p[j+1].getpId() << ")" << endl;
 			}
-			////print"context exchange" and go to the next process
-			if (j != size-1)
-				cout << "[time " << t << "ms] Context switch (swap out process " << p[j].getpId() << " for " << p[j+1].getpId() << ")" << endl;
 		}
-
 
 	// after going through all processes(in this case 20), start over and do the same
 	//run until all process is terminated
@@ -371,7 +384,6 @@ void printProcessCreate(Sim* p, int size){
 }
 
 void printContextSwitch(int waitTime, int location){
-	waitTime = totalElapsedTime(waitTime); 
 	cout << "[time " << waitTime << "ms] Context switch (swapped out process " << location << " for " << location+1 << ")\n";
 }
 
