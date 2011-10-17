@@ -19,11 +19,14 @@ private:
 public: 
 	Sim(); 
 	Sim( int pId, int cTime, int p ); 
+	void setCTime(int cTime);
 	void setiTime( int iTime ); 
 	void setTurnTime( int turnTime ); 
 	void setTerminateTime( int terTime ); 
 	void setWaitTime(int wTime);
 	void setTimeRemain(int tRemain);
+	void setPidId(int pId); 
+	void setP(int p);
 	int getpId(); 
 	int getcTime(); 
 	int getP(); 
@@ -56,6 +59,10 @@ Sim::Sim( int pId, int cTime, int p ){
 	timeRemain = 0;
 }
 
+void Sim::setCTime(int cTime){
+	cpuTime = cTime;
+}
+
 void Sim::setiTime( int iTime ){ 
 	initialWaitTime = iTime; 
 }
@@ -74,6 +81,12 @@ void Sim::setWaitTime(int wTime){
 
 void Sim::setTimeRemain(int tRemain){
 	timeRemain = tRemain;
+}
+void Sim::setPidId(int pId){ 
+	processId = pId;
+}
+void Sim::setP(int p){
+	priority = p; 
 }
 
 int Sim::getpId(){ 

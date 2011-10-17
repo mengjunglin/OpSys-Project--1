@@ -7,6 +7,7 @@
 #include <ctime>
 #include "classSim.h"
 #include <string>
+#include <memory>
 using namespace std;
 
 void fcfs(Sim* p, int size);  // First-Come First Served(FCFS)
@@ -22,6 +23,7 @@ void printProcessCreate(Sim* p, const int size);
 void printContextSwitch(int waitTime, int location);
 void printCPUFirstTime(Sim* p, int size);
 void printTerminate(Sim* p, int size);
+bool compareSim(Sim a, Sim b);
 
 // Simulate elapsed time using a global variable 
 int elapsedTime = 0; 
@@ -40,7 +42,7 @@ int main(int argc, char * argv[])
 	}
 
 	
-	Sim p[n];	// An array which holds all the processes default of 20 processes
+	Sim pArr[n];	// An array which holds all the processes default of 20 processes
 	srand(time(0)); // the seed value for the random number generator 
 	/* the for loop creates the dummy processes that will be sent 
 	 * into the functions for testing the algorithms. The for loop
@@ -51,26 +53,26 @@ int main(int argc, char * argv[])
 		int cpuTime = rand() % 7000 + 500;  // This generates a random number between 500 - 7500
 		int priority = rand() % 5; 	    // this generates a random number between 0 and 4 
 		Sim process(i+1, cpuTime, priority ); 
-		p[i] = process;  
+		pArr[i] = process;  
 	}
 	
 	/* if there is two arguments then check to compare the arguments with the
 	 * specific functions if it does not compare return 1 with an error */ 
 	if(argc == 2) {  
 		if((string)argv[1] == "fcfs") { 
-			fcfs(p, n); 
+			fcfs(pArr, n); 
 		} 
 		else if((string)argv[1] == "sjf"){
-			sjf(p, n); 
+			sjf(pArr, n); 
 		}
 		else if((string)argv[1] == "psjf"){
-			psjf(p, n); 
+			psjf(pArr, n); 
 		} 
 		else if((string)argv[1] == "rr"){
-			rr(p, n); 
+			rr(pArr, n); 
 		} 
 		else if((string)argv[1] == "pp"){
-			pp(p, n); 
+			pp(pArr, n); 
 		}
 		else{ 
 			cout << "ERROR: This argument does not match any of the test functions. \nPlease use fcfs, sjf, psjf, rr, or pp as your second argument.\n"; 
@@ -80,14 +82,14 @@ int main(int argc, char * argv[])
 	}
 	else {
 		// Send the processes to the different functions 
-		fcfs(p, n); 
-		//sjf(p, n); 
-		psjf(p, n); 
-		rr(p, n); 
-		pp(p, n); 
+		fcfs(pArr, n); 
+		sjf(pArr, n); 
+		psjf(pArr, n); 
+		rr(pArr, n); 
+		pp(pArr, n); 
 	}
 
-	sortProcesses(p, n);
+	sortProcesses(pArr, n);
 
 	
 	/* 1. Process creation (display the process ID, required CPU time, and priority, if applicable) - DONE for FCFS
@@ -169,8 +171,19 @@ void sjf(Sim* p, int size)
 	/* Sort the processes based on the CPU time once the processes 
 	 * are sorted then run the simulation similar to FCFS */ 
 	//Sim*  pSorted = sortProcesses(p, size);
-	Sim* pSorted;
-	pSorted = p;
+	Sim* pSorted = new Sim[size];
+	for(int x = 0; x < size; x ++) 
+	{ 
+		pSorted[x].setCTime(p[x].getcTime());
+		pSorted[x].setiTime(p[x].getITime());
+		pSorted[x].setTerminateTime(p[x].getTerminateTime());
+		pSorted[x].setTimeRemain(p[x].getTimeRemain());
+		pSorted[x].setTurnTime(p[x].getTurnTime());
+		pSorted[x].setWaitTime(p[x].getWaitTime());
+		pSorted[x].setP(p[x].getP()); 
+		pSorted[x].setPidId(p[x].getpId());
+	}
+
 	sortProcesses(pSorted,size);
 
 	tempWait = 0;
@@ -188,10 +201,8 @@ void sjf(Sim* p, int size)
 		pSorted[i].setTurnTime( eTemp ); 
 	}
 
-	cout << "TEST PRINT SORTED!!!!" << endl;
-	printProcessCreate(p,size);
-
-	
+	//cout << "TEST PRINT SORTED!!!!" << endl;
+	//printProcessCreate(pSorted,size);
 	
 	cout << "\n\n\nShortest Job First without Preemption | Send Processes to CPU and run: \n"; 
 	
@@ -321,22 +332,18 @@ void dataToCollect(Sim* p, int size, int minTurnAround, int maxTurnAround, int t
 }
 
 Sim* sortProcesses(Sim* p, const int size){ 
-	Sim* temp; 
-	temp = p;  
-
 	for(int i = 0; i < size; i ++) 
 	{ 
 		for(int j = 0; j < size; j++)
 		{
-			if (temp[i].getcTime() < temp[j].getcTime())
+			if (p[i].getcTime() < p[j].getcTime())
 			{
-				swap(temp[i],temp[j]);
+				swap(p[i],p[j]);
 			}
 		}
-	}
-	return temp; 
+	} 
+	return p; 
 }
-
 
 #ifndef printFunctions 
 /* printProcessCreate will print the processes that were 
