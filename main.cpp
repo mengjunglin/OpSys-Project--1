@@ -8,6 +8,8 @@
 #include "classSim.h"
 #include <string>
 #include <memory>
+#include <iomanip> 
+
 using namespace std;
 
 void fcfs(Sim* p, int size);  // First-Come First Served(FCFS)
@@ -24,6 +26,7 @@ void printContextSwitch(int waitTime, int location);
 void printCPUFirstTime(Sim* p, int size);
 void printTerminate(Sim* p, int size);
 bool compareSim(Sim a, Sim b);
+int totalElapsedTime(int eTime);
 
 // Simulate elapsed time using a global variable 
 int elapsedTime = 0; 
@@ -110,7 +113,7 @@ void fcfs(Sim* p, int size)
 	int tempWait = 0, eTemp, minTurn = p[0].getTurnTime(), maxTurn = 0, turnT = 0, minInitial = p[0].getITime(), 
 		maxInitial = 0, initialT = 0, minWait = p[0].getWaitTime(), maxWait = 0, totalW = 0;  
 
-	// elapsedTime = 0; // Clear out the Global Variable "elapsedTime" 
+	elapsedTime = 0; // Clear out the Global Variable "elapsedTime" 
 
 	/* This for loop sets the inital times for each process and 
 	 * prints it's "create" statement */ 
@@ -135,17 +138,19 @@ void fcfs(Sim* p, int size)
 	{ 
 		if (j != 0)
 		{
+			elapsedTime = totalElapsedTime(elapsedTime); 
 			printContextSwitch(p[j].getWaitTime(), j);
-			//cout << "[time " << p[j].getWaitTime() << "ms] Context switch (swapped out process " << j << " for " << j+1 << ")\n";
+			elapsedTime = totalElapsedTime(elapsedTime); 
 		}
-		cout << "[time " << p[j].getWaitTime() << "ms] Process " << j+1 << " access CPU for the first time (wait time " << p[j].getITime() << "ms)\n";	
-		cout << "[time " << p[j].getTerminateTime() << "ms] Process " << j+1 << " terminated (turnaround time " << p[j].getTurnTime() << "ms, wait time " << p[j].getWaitTime() << "ms)\n"; 
+		cout << "[time " << elapsedTime << "ms] Process " << j+1 << " access CPU for the first time (wait time " << p[j].getITime() << "ms)\n";	
+		elapsedTime += p[j].getcTime();
+		cout << "[time " << elapsedTime << "ms] Process " << j+1 << " terminated (turnaround time " << p[j].getTurnTime() << "ms, wait time " << p[j].getWaitTime() << "ms)\n"; 		
 	} 
 
 	dataToCollect(p, size, minTurn, maxTurn, turnT, minInitial, maxInitial, initialT, minWait, maxWait, totalW);
 }
 
-
+#ifndef sjf
 /* Shortest-Job First (SFS)
  * This will sort the processes that are sent in based on the 
  * shortest job in the array. */ 
@@ -153,6 +158,8 @@ void sjf(Sim* p, int size)
 {
 	int tempWait = 0, eTemp, minTurn = p[0].getTurnTime(), maxTurn = 0, turnT = 0, minInitial = p[0].getITime(), 
 		maxInitial = 0, initialT = 0, minWait = p[0].getWaitTime(), maxWait = 0, totalW = 0;  
+
+	elapsedTime = 0; 
 
 	cout << "Create Processes: \n"; 
 	for (int i = 0; i < size; i++)
@@ -188,21 +195,12 @@ void sjf(Sim* p, int size)
 
 	tempWait = 0;
 	pSorted[0].setWaitTime(tempWait);
-	for(int i = 0; i < size; i++)
+	for(int i = 1; i < size; i++)
 	{
-		if (i != 0)
-		{
-			tempWait += pSorted[i-1].getcTime();
-			pSorted[i].setWaitTime(tempWait);
-			pSorted[i].setiTime(tempWait);
-		}
-		eTemp = tempWait + pSorted[i].getcTime();
-		pSorted[i].setTerminateTime( eTemp );
-		pSorted[i].setTurnTime( eTemp ); 
+		tempWait += pSorted[i-1].getcTime();
+		pSorted[i].setWaitTime(tempWait);
+		pSorted[i].setiTime(tempWait);
 	}
-
-	//cout << "TEST PRINT SORTED!!!!" << endl;
-	//printProcessCreate(pSorted,size);
 	
 	cout << "\n\n\nShortest Job First without Preemption | Send Processes to CPU and run: \n"; 
 	
@@ -211,16 +209,36 @@ void sjf(Sim* p, int size)
 		if (j != 0)
 		{
 			//printContextSwitch(pSorted[j].getWaitTime(), j);
-			cout << "[time " << pSorted[j].getWaitTime() << "ms] Context switch (swapped out process " << pSorted[j-1].getpId() << " for " << pSorted[j].getpId() << ")\n";
-		}
-		cout << "[time " << pSorted[j].getWaitTime() << "ms] Process " << pSorted[j].getpId() << " access CPU for the first time (wait time " << pSorted[j].getWaitTime() << "ms)\n";	
-		cout << "[time " << pSorted[j].getTerminateTime() << "ms] Process " << pSorted[j].getpId() << " terminated (turnaround time " << pSorted[j].getTurnTime() << "ms, wait time " << pSorted[j].getWaitTime() << "ms)\n"; 
+			elapsedTime = totalElapsedTime(pSorted[j].getWaitTime()); 
+			cout << "[time " << elapsedTime << "ms] Context switch (swapped out process " << pSorted[j-1].getpId() << " for " << pSorted[j].getpId() << ")\n";
+			elapsedTime = totalElapsedTime(elapsedTime); 
+		} 
+		pSorted[j].setWaitTime(elapsedTime);
+		cout << "[time " << elapsedTime << "ms] Process " << pSorted[j].getpId() << " access CPU for the first time (wait time " << pSorted[j].getWaitTime() << "ms)\n";	
+		elapsedTime+=pSorted[j].getcTime(); 
+		pSorted[j].setTurnTime(elapsedTime);
+		cout << "[time " << elapsedTime << "ms] Process " << pSorted[j].getpId() << " terminated (turnaround time " << pSorted[j].getTurnTime() << "ms, wait time " << pSorted[j].getWaitTime() << "ms)\n"; 
 	} 
 
 	dataToCollect(pSorted, size, minTurn, maxTurn, turnT, minInitial, maxInitial, initialT, minWait, maxWait, totalW);
 
 	
 }
+
+Sim* sortProcesses(Sim* p, const int size){ 
+	for(int i = 0; i < size; i ++) 
+	{ 
+		for(int j = 0; j < size; j++)
+		{
+			if (p[i].getcTime() < p[j].getcTime())
+			{
+				swap(p[i],p[j]);
+			}
+		}
+	} 
+	return p; 
+}
+#endif
 
 // Preemptive Shortest-Job First (SJF)
 void psjf(Sim* p, int size)
@@ -317,33 +335,30 @@ void dataToCollect(Sim* p, int size, int minTurnAround, int maxTurnAround, int t
 	
 	/* int minTurnAround, int maxTurnAround, int turnTotal, int minInitialWait, 
 	int maxInitialWait, int initialTotal, int minWaitTime, int maxWaitTime, int totalWait */ 
+	double tempTime = 0.0; 
+	cout << fixed;
+	cout << setprecision (3) <<endl;
+	
 	cout << "\n\n\n"; 
 	cout << "Minimum Turn Around Time: " << minTurnAround << "\n"; 
 	cout << "Maximum Turn Around Time: " << maxTurnAround << "\n"; 
-	cout << "Average Turn Around Time: " << turnTotal/20 << "\n\n";
+	tempTime = (double)turnTotal/(double)size; 
+	cout << "Average Turn Around Time: " << tempTime << "\n\n";
 
 	cout << "Minimum Initial Wait Time: " << minInitialWait << "\n"; 
 	cout << "Maximum Initial Wait Time: " << maxInitialWait << "\n"; 
-	cout << "Average Initial Wait Time: " << initialTotal/20 << "\n\n";
+	tempTime = (double)initialTotal/(double)size; 
+	cout << "Average Initial Wait Time: " << tempTime << "\n\n";
 
 	cout << "Minimum Wait Time: " << minWaitTime << "\n"; 
 	cout << "Maximum Wait Time: " << maxWaitTime << "\n"; 
-	cout << "Average Wait Time: " << totalWait/20 << "\n\n";
+	tempTime = (double)totalWait/(double)size; 
+	cout << "Average Wait Time: " << tempTime << "\n\n";
+
+	
 }
 
-Sim* sortProcesses(Sim* p, const int size){ 
-	for(int i = 0; i < size; i ++) 
-	{ 
-		for(int j = 0; j < size; j++)
-		{
-			if (p[i].getcTime() < p[j].getcTime())
-			{
-				swap(p[i],p[j]);
-			}
-		}
-	} 
-	return p; 
-}
+
 
 #ifndef printFunctions 
 /* printProcessCreate will print the processes that were 
@@ -356,7 +371,13 @@ void printProcessCreate(Sim* p, int size){
 }
 
 void printContextSwitch(int waitTime, int location){
+	waitTime = totalElapsedTime(waitTime); 
 	cout << "[time " << waitTime << "ms] Context switch (swapped out process " << location << " for " << location+1 << ")\n";
+}
+
+int totalElapsedTime(int eTime){ 
+	eTime+=4; 
+	return eTime; 
 }
 
 void printCPUFirstTime(Sim* p, int size){
