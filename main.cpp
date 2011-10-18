@@ -241,24 +241,46 @@ void rr(Sim* p, int size)
 	printProcessCreate(p, size);
 
 	cout << "\n\n\nRound-Robin with time slice 100ms | Send Processes to CPU and run: \n";
+	/* 
+		if( whatever > 0) 
+			do whatever 
+			else continue 
+		if(time == 0) terminated 
+		set location to -1
+		counter ++
+		if ( time < 0 ) 
+			counter ++; 
 
+
+		int counter = 0; 
+		counter adds up everytime we hit a negative number 
+		if counter == size 
+		then all processes are done 
+		else 
+		continue round robin and set counter back to 0
+	*/ 
 	//WHILE not all process is done(some process still have time remain), perform RR
-	for (int j = 0; j < size; j++)
+	int counter = 0; 
+	while(counter != size) 
 	{
-		t = t + 100;
-		if (p[j].getTimeRemain() != 0)
+		counter = 0; // re-set counter since counter != size in the last iteration
+		for (int j = 0; j < size; j++)
 		{
-			//remaintime = remaintime-timeslice
-			p[j].setTimeRemain( p[j].getTimeRemain() - timeSlice );
-			if (p[j].getTimeRemain() <= 0)////if remain time == 0, print "terminate"
+			t = t + 100;
+			if (p[j].getTimeRemain() != 0)
 			{
-				cout << "Process " << p[j].getpId() << "terminates";
+				//remaintime = remaintime-timeslice
+				p[j].setTimeRemain( p[j].getTimeRemain() - timeSlice );
+				if (p[j].getTimeRemain() <= 0)				//if remain time == 0, print "terminate"
+				{
+					int check = abs(p[j].getTimeRemain()); 
+					cout << "Process " << p[j].getpId() << "terminates";
+				}
+				//print"context exchange" and go to the next process
+				if (j != size-1)
+					cout << "[time " << t << "ms] Context switch (swap out process " << p[j].getpId() << " for " << p[j+1].getpId() << ")" << endl;
 			}
-			////print"context exchange" and go to the next process
-			if (j != size-1)
-				cout << "[time " << t << "ms] Context switch (swap out process " << p[j].getpId() << " for " << p[j+1].getpId() << ")" << endl;
 		}
-
 
 	// after going through all processes(in this case 20), start over and do the same
 	//run until all process is terminated
