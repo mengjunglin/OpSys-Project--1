@@ -81,7 +81,7 @@ int main(int argc, char * argv[])
 	else {
 		// Send the processes to the different functions 
 		fcfs(p, n); 
-		//sjf(p, n); 
+		sjf(p, n); 
 		psjf(p, n); 
 		rr(p, n); 
 		pp(p, n); 
