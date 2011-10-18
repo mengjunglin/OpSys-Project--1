@@ -65,20 +65,12 @@ int main(int argc, char * argv[])
 		}
 	}
 	else {
-<<<<<<< HEAD
 		// Send the processes to the different functions 
-		fcfs(p, n); 
-		sjf(p, n); 
-		psjf(p, n); 
-		rr(p, n); 
-		pp(p, n); 
-=======
 		fcfs(pArr, n); 
 		sjf(pArr, n); 
 		psjf(pArr, n); 
-		rr(pArr, n); 
+		//rr(pArr, n); 
 		pp(pArr, n); 
->>>>>>> 3e0285807553682e0ea0dcf8f0fab54c26a2b38d
 	}
 	/* 1. Process creation (display the process ID, required CPU time, and priority, if applicable) - DONE for FCFS, DONE for SJF
 	 * 2. Context switch (display the two before/after process IDs involved) - DONE for FCFS, DONE for SJF
