@@ -238,10 +238,8 @@ void rr(Sim* p, int size)
 		maxInitial = 0, initialT = 0, minWait = p[0].getWaitTime(), maxWait = 0, totalW = 0;  
 	int timeSlice = 100; //initialize time slice with 100 ms
 
-	
-
 	cout << "\n\n\nRound-Robin with time slice 100ms | Send Processes to CPU and run: \n";
-	//WHILE not all process is done(some process still have time remain), perform RR
+
 	elapsedTime = 0; 
 	int counter = 0; 
 	int store;  // stores the pidId of the last variable
@@ -267,7 +265,6 @@ void rr(Sim* p, int size)
 				cout << "[time " << elapsedTime << "ms] Process " << p[j].getpId() << " access CPU for the first time (wait time " << p[j].getWaitTime() << "ms)\n";	
 			}
 				elapsedTime = elapsedTime + 100;
-				//remaintime = remaintime-timeslice
 				p[j].setTimeRemain( p[j].getTimeRemain() - timeSlice );
 				if (p[j].getTimeRemain() <= 0)				// if remain time == 0, print "terminate"
 				{
@@ -276,10 +273,8 @@ void rr(Sim* p, int size)
 					p[j].setTimeRemain(0); //sets the time to 0
 					p[j].setTurnTime(elapsedTime);
 					cout << "[time " << elapsedTime << "ms] Process " << p[j].getpId() << " terminated (turnaround time " << p[j].getTurnTime() << "ms, wait time " << p[j].getWaitTime() << "ms)\n";
-					//cout << "Process " << p[j].getpId() << "terminates" << endl;
 					counter++; // This processes is now added to the "ended" counter 
 				}
-				//print"context exchange" and go to the next process
 				store = p[j].getpId(); 
 			}
 			else{ 
@@ -287,10 +282,8 @@ void rr(Sim* p, int size)
 			}
 			firstTime = false; 
 		}
-
-	// after going through all processes(in this case 20), start over and do the same
-	//run until all process is terminated
 	}
+	dataToCollect(p, size, minTurn, maxTurn, turnT, minInitial, maxInitial, initialT, minWait, maxWait, totalW);
 
 }
 
