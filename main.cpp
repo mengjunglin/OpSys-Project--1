@@ -9,6 +9,7 @@
 #include <string>
 #include <memory>
 #include <iomanip> 
+#include <fstream>
 
 using namespace std;
 
@@ -36,6 +37,13 @@ int elapsedTime = 0;
 
 int main(int argc, char * argv[])
 {	
+	streambuf *psbuf, *backup;
+	ofstream filestr;
+	filestr.open("whatever.txt");
+	backup = cout.rdbuf(); //backup cout streambuf
+	psbuf = filestr.rdbuf(); //get file streambuf
+	cout.rdbuf(psbuf); //assign streambuf to cout
+
 	/* To call a specific process management simulation functions use 
 	 * fscs, sjf, psjf, rr, or pp as the second argument when calling 
 	 * the program for example: bash$ ./a.exe fscs */ 
@@ -69,13 +77,15 @@ int main(int argc, char * argv[])
 		fcfs(pArr, n); 
 		sjf(pArr, n); 
 		psjf(pArr, n); 
-		//rr(pArr, n); 
+		rr(pArr, n); 
 		pp(pArr, n); 
 	}
 	/* 1. Process creation (display the process ID, required CPU time, and priority, if applicable) - DONE for FCFS, DONE for SJF
 	 * 2. Context switch (display the two before/after process IDs involved) - DONE for FCFS, DONE for SJF
 	 * 3. Process's first CPU usage (display the process ID and initial wait time) - DONE for FCFS, DONE for SJF
 	 * 4. Process termination (display the process ID, its turnaround time, and its total wait time) - DONE for FCFS, DONE for SJF */ 
+
+	filestr.close();
 
 	system("pause");
 	return 0;
@@ -93,6 +103,22 @@ Sim* createProcesses(const int size){
 		Sim process(i+1, cpuTime, priority ); 
 		pA[i] = process;  
 	}
+	cout << "Create Processes: \n"; 
+	int tempWait = 0, eTemp;
+	for (int i = 0; i < size; i++)
+	{
+		if (i != 0){
+			tempWait += pA[i-1].getcTime();
+			pA[i].setWaitTime(tempWait);
+			pA[i].setiTime(tempWait); 
+		}
+		/* This for loop sets the inital times for each process and prints it's "create" statement */ 
+		eTemp = tempWait + pA[i].getcTime();
+		pA[i].setTerminateTime( eTemp );
+		pA[i].setTurnTime( eTemp );
+		pA[i].setTimeRemain( pA[i].getcTime() );
+	}
+	printProcessCreate(pA, size);
 	return pA; 
 }
 
@@ -100,26 +126,10 @@ Sim* createProcesses(const int size){
  * a first-come-first-served basis so the first process in is the first process to run and terminate */ 
 void fcfs(Sim* p, int size)
 {
-	int tempWait = 0, eTemp, minTurn = p[0].getTurnTime(), maxTurn = 0, turnT = 0, minInitial = p[0].getITime(), 
+	int minTurn = p[0].getTurnTime(), maxTurn = 0, turnT = 0, minInitial = p[0].getITime(), 
 		maxInitial = 0, initialT = 0, minWait = p[0].getWaitTime(), maxWait = 0, totalW = 0;  
 
 	elapsedTime = 0; // Clear out the Global Variable "elapsedTime" 
-
-	/* This for loop sets the inital times for each process and prints it's "create" statement */ 
-	cout << "Create Processes: \n"; 
-	for (int i = 0; i < size; i++)
-	{
-		if (i != 0){
-			tempWait += p[i-1].getcTime();
-			p[i].setWaitTime(tempWait);
-			p[i].setiTime(tempWait); 
-		}
-
-		eTemp = tempWait + p[i].getcTime();
-		p[i].setTerminateTime( eTemp );
-		p[i].setTurnTime( eTemp ); 
-	}
-	printProcessCreate(p, size);
 
 	cout << "\n\n\nFirst-Come-First-Served | Send Processes to CPU and run: \n"; 
 
@@ -148,25 +158,11 @@ void fcfs(Sim* p, int size)
  * shortest job in the array. */ 
 void sjf(Sim* p, int size)
 {
-	int tempWait = 0, eTemp, minTurn = p[0].getTurnTime(), maxTurn = 0, turnT = 0, minInitial = p[0].getITime(), 
+	int tempWait = 0, minTurn = p[0].getTurnTime(), maxTurn = 0, turnT = 0, minInitial = p[0].getITime(), 
 		maxInitial = 0, initialT = 0, minWait = p[0].getWaitTime(), maxWait = 0, totalW = 0;  
 
 	elapsedTime = 0; 
 
-	cout << "Create Processes: \n"; 
-	for (int i = 0; i < size; i++)
-	{
-		if (i != 0){
-			tempWait += p[i-1].getcTime();
-			p[i].setWaitTime(tempWait);
-			p[i].setiTime(tempWait); 
-		}
-
-		eTemp = tempWait + p[i].getcTime();
-		p[i].setTerminateTime( eTemp );
-		p[i].setTurnTime( eTemp ); 
-	}
-	printProcessCreate(p, size);
 	/* Sort the processes based on the CPU time once the processes 
 	 * are sorted then run the simulation similar to FCFS */ 
 	//Sim*  pSorted = sortProcesses(p, size);
@@ -184,8 +180,6 @@ void sjf(Sim* p, int size)
 	}
 
 	sortProcesses(pSorted,size);
-
-	tempWait = 0;
 	pSorted[0].setWaitTime(tempWait);
 	for(int i = 1; i < size; i++)
 	{
@@ -240,67 +234,49 @@ void psjf(Sim* p, int size)
 // Round-Robin (RR)
 void rr(Sim* p, int size)
 {
-	int tempWait = 0, eTemp, minTurn = p[0].getTurnTime(), maxTurn = 0, turnT = 0, minInitial = p[0].getITime(), 
+	int minTurn = p[0].getTurnTime(), maxTurn = 0, turnT = 0, minInitial = p[0].getITime(), 
 		maxInitial = 0, initialT = 0, minWait = p[0].getWaitTime(), maxWait = 0, totalW = 0;  
 	int timeSlice = 100; //initialize time slice with 100 ms
-	int t = 0;
 
-	cout << "Create Processes: \n"; 
-	for (int i = 0; i < size; i++)
-	{
-		if (i != 0){
-			tempWait += p[i-1].getcTime();
-			p[i].setWaitTime(tempWait);
-			p[i].setiTime(tempWait); 
-		}
-
-		eTemp = tempWait + p[i].getcTime();
-		p[i].setTerminateTime( eTemp );
-		p[i].setTurnTime( eTemp );
-		p[i].setTimeRemain( p[i].getcTime() );
-	}
-	printProcessCreate(p, size);
+	
 
 	cout << "\n\n\nRound-Robin with time slice 100ms | Send Processes to CPU and run: \n";
-	/* 
-		if( whatever > 0) 
-			do whatever 
-			else continue 
-		if(time == 0) terminated 
-		set location to -1
-		counter ++
-		if ( time < 0 ) 
-			counter ++; 
-
-
-		int counter = 0; 
-		counter adds up everytime we hit a negative number 
-		if counter == size 
-		then all processes are done 
-		else 
-		continue round robin and set counter back to 0
-	*/ 
 	//WHILE not all process is done(some process still have time remain), perform RR
+	elapsedTime = 0; 
 	int counter = 0; 
+	int store;  // stores the pidId of the last variable
+	bool firstTime = true; 
 	while(counter != size) 
 	{
-		counter = 0; // re-set counter since counter != size in the last iteration
+		counter = 0; // re-set counter since counter != size in the last iteration therefore not all the processes are finished
 		for (int j = 0; j < size; j++)
 		{
-			t = t + 100;
 			if (p[j].getTimeRemain() != 0)
 			{
+				if(firstTime != true && store != p[j].getpId())
+				{ 
+					elapsedTime = totalElapsedTime(elapsedTime);
+					cout << "[time " << elapsedTime << "ms] Context switch (swap out process " << store << " for " << p[j].getpId() << ")" << endl;
+					elapsedTime = totalElapsedTime(elapsedTime);
+				}
+				elapsedTime = elapsedTime + 100;
 				//remaintime = remaintime-timeslice
 				p[j].setTimeRemain( p[j].getTimeRemain() - timeSlice );
-				if (p[j].getTimeRemain() <= 0)				//if remain time == 0, print "terminate"
+				if (p[j].getTimeRemain() <= 0)				// if remain time == 0, print "terminate"
 				{
-					int check = abs(p[j].getTimeRemain()); 
-					cout << "Process " << p[j].getpId() << "terminates";
+					int check = abs(p[j].getTimeRemain()); // Checks to see if the program terminated before the timeslice
+					elapsedTime = elapsedTime - check; //subtract off the time that this slice did not use 
+					p[j].setTimeRemain(0); //sets the time to 0
+					cout << "Process " << p[j].getpId() << "terminates" << endl;
+					counter++; // This processes is now added to the "ended" counter 
 				}
 				//print"context exchange" and go to the next process
-				if (j != size-1)
-					cout << "[time " << t << "ms] Context switch (swap out process " << p[j].getpId() << " for " << p[j+1].getpId() << ")" << endl;
+				store = p[j].getpId(); 
 			}
+			else{ 
+					counter++; 
+			}
+			firstTime = false; 
 		}
 
 	// after going through all processes(in this case 20), start over and do the same
