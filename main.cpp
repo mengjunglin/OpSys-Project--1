@@ -251,6 +251,7 @@ void rr(Sim* p, int size)
 		counter = 0; // re-set counter since counter != size in the last iteration therefore not all the processes are finished
 		for (int j = 0; j < size; j++)
 		{
+			
 			if (p[j].getTimeRemain() != 0)
 			{
 				if(firstTime != true && store != p[j].getpId())
@@ -258,7 +259,13 @@ void rr(Sim* p, int size)
 					elapsedTime = totalElapsedTime(elapsedTime);
 					cout << "[time " << elapsedTime << "ms] Context switch (swap out process " << store << " for " << p[j].getpId() << ")" << endl;
 					elapsedTime = totalElapsedTime(elapsedTime);
+					p[j].setWaitTime(elapsedTime-p[j].getcTime());
 				}
+				if (p[j].getcTime() == p[j].getTimeRemain())
+			{
+				p[j].setWaitTime(elapsedTime);
+				cout << "[time " << elapsedTime << "ms] Process " << p[j].getpId() << " access CPU for the first time (wait time " << p[j].getWaitTime() << "ms)\n";	
+			}
 				elapsedTime = elapsedTime + 100;
 				//remaintime = remaintime-timeslice
 				p[j].setTimeRemain( p[j].getTimeRemain() - timeSlice );
@@ -267,7 +274,9 @@ void rr(Sim* p, int size)
 					int check = abs(p[j].getTimeRemain()); // Checks to see if the program terminated before the timeslice
 					elapsedTime = elapsedTime - check; //subtract off the time that this slice did not use 
 					p[j].setTimeRemain(0); //sets the time to 0
-					cout << "Process " << p[j].getpId() << "terminates" << endl;
+					p[j].setTurnTime(elapsedTime);
+					cout << "[time " << elapsedTime << "ms] Process " << p[j].getpId() << " terminated (turnaround time " << p[j].getTurnTime() << "ms, wait time " << p[j].getWaitTime() << "ms)\n";
+					//cout << "Process " << p[j].getpId() << "terminates" << endl;
 					counter++; // This processes is now added to the "ended" counter 
 				}
 				//print"context exchange" and go to the next process
