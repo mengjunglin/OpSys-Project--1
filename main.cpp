@@ -1,4 +1,4 @@
-/* Tiffany Milano and Meng Jung Lin 
+* Tiffany Milano and Meng Jung Lin 
  * Project 1 - Operating Systems 
  * October 20th 2011 */ 
 
@@ -130,7 +130,7 @@ Sim* createProcesses(const int size){
 	return pA; 
 }
 
-/* First-Come First Served(FCFS) The processes will get sent into this function and then worked on in 
+* First-Come First Served(FCFS) The processes will get sent into this function and then worked on in 
  * a first-come-first-served basis so the first process in is the first process to run and terminate */ 
 void fcfs(Sim* p, int size)
 {
@@ -162,7 +162,7 @@ void fcfs(Sim* p, int size)
 }
 
 #ifndef sjf
-/* Shortest-Job First (SFS)
+* Shortest-Job First (SFS)
  * This will sort the processes that are sent in based on the 
  * shortest job in the array. */ 
 void sjf(Sim* p, int size)
@@ -443,7 +443,7 @@ void dataToCollect(Sim* p, int size, int minTurnAround, int maxTurnAround, int t
 
 
 #ifndef printFunctions 
-/* printProcessCreate will print the processes that were 
+* printProcessCreate will print the processes that were 
  * created in the Sim array */ 
 void printProcessCreate(Sim* p, int size)
 { 
