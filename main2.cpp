@@ -1,4 +1,4 @@
-* Tiffany Milano and Meng Jung Lin 
+/* Tiffany Milano and Meng Jung Lin 
  * Project 1 - Operating Systems 
  * October 20th 2011 */ 
 
@@ -145,7 +145,7 @@ Sim* createProcesses(const int size){
 	return pA; 
 }
 
-* First-Come First Served(FCFS) The processes will get sent into this function and then worked on in 
+/* First-Come First Served(FCFS) The processes will get sent into this function and then worked on in 
  * a first-come-first-served basis so the first process in is the first process to run and terminate */ 
 void fcfs(Sim* p, int size)
 {
@@ -171,13 +171,14 @@ void fcfs(Sim* p, int size)
 		p[j].setTurnTime(elapsedTime);
 		cout << "[time " << elapsedTime << "ms] Process " << j+1 
 			<< " terminated (turnaround time " << p[j].getTurnTime() 
-			<< "ms, wait time " << p[j].getWaitTime() << "ms)\n"; 		
+			<< "ms, wait time " << p[j].getWaitTime() << "ms)\n"; 
+		//printTerminate(elapsedTime, p[j]., int tTime, int waitTime)
 	} 
 	dataToCollect(p, size, minTurn, maxTurn, turnT, minInitial, maxInitial, initialT, minWait, maxWait, totalW);
 }
 
 #ifndef sjf
-* Shortest-Job First (SFS)
+/* Shortest-Job First (SFS)
  * This will sort the processes that are sent in based on the 
  * shortest job in the array. */ 
 void sjf(Sim* p, int size)
@@ -264,7 +265,12 @@ void psjf(Sim* p, int size)
 
 	elapsedTime = 0;
 
-
+	//while there are still process remain
+	for (int i = 0; i < size; i++)
+	{
+		p[i].setTimeRemain(p[i].getTimeRemain() - p[i+i].getATime());
+	}
+	
 }
 
 // Round-Robin (RR)
@@ -454,7 +460,7 @@ void dataToCollect(Sim* p, int size, int minTurnAround, int maxTurnAround, int t
 
 
 #ifndef printFunctions 
-* printProcessCreate will print the processes that were 
+/* printProcessCreate will print the processes that were 
  * created in the Sim array */ 
 void printProcessCreate(int arrTime, int pId, int cpu)
 { 
