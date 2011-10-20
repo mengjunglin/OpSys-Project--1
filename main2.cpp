@@ -80,10 +80,10 @@ int main(int argc, char * argv[])
 	}
 	else {
 		// Send the processes to the different functions 
-		fcfs(pArr, n); 
+		//fcfs(pArr, n); 
 		//sjf(pArr, n); 
 		//psjf(pArr, n); 
-		rr(pArr, n); 
+		//rr(pArr, n); 
 		pp(pArr, n); 
 	}
 	/* 1. Process creation (display the process ID, required CPU time, and priority, if applicable) - DONE for FCFS, DONE for SJF
@@ -356,6 +356,9 @@ void pp(Sim* p, int size)
 	int tempWait = 0, minTurn = p[0].getTurnTime(), maxTurn = 0, turnT = 0, minInitial = p[0].getITime(), 
 		maxInitial = 0, initialT = 0, minWait = p[0].getWaitTime(), maxWait = 0, totalW = 0;  
 
+	vector <Sim> arrived;	//vector to store processes that has arrived
+	int counter = 0;
+
 	elapsedTime = 0;
 
 	for (int i = 0; i < size; i++)
@@ -365,7 +368,7 @@ void pp(Sim* p, int size)
 
 	cout << "\n\n\nPreemptive-Priority | Send Processes to CPU and run: \n";
 
-	Sim* pSorted = new Sim[size];
+	*Sim* pSorted = new Sim[size];
 	for(int x = 0; x < size; x ++) 
 	{ 
 		pSorted[x].setCTime(p[x].getcTime());
@@ -377,7 +380,8 @@ void pp(Sim* p, int size)
 		pSorted[x].setP(p[x].getP()); 
 		pSorted[x].setPidId(p[x].getpId());
 	}
-
+	//I don't think we should sort by priority since it is already sorted in arrival time
+	/*
 	sortPriority(pSorted,size);
 	pSorted[0].setWaitTime(tempWait);
 	for(int i = 1; i < size; i++)
@@ -385,6 +389,24 @@ void pp(Sim* p, int size)
 		tempWait += pSorted[i-1].getcTime();
 		pSorted[i].setWaitTime(tempWait);
 		pSorted[i].setiTime(tempWait);
+	}*/
+
+	//push process into the vector if the arrival time is 0
+	for (int i = 0; i < size; i++)
+	{
+		if (p[i].getATime() == 0)
+		{
+			arrived.push_back(p[i]);
+		}
+	}
+	
+	//while there are still process running
+	while(counter != size) 
+	{
+		counter = 0; // re-set counter since counter != size in the last iteration therefore not all the processes are finished
+		//if the next process arrives before the burrent process finish running, THEN push_back(new process) & pause when new process arrives
+		//////compare priority of current and new
+		//////if new.getP < current.getP, THEN run new
 	}
 	
 	
@@ -392,10 +414,8 @@ void pp(Sim* p, int size)
 	{ 
 		if (j != 0)
 		{
-			//printContextSwitch(pSorted[j].getWaitTime(), j);
 			elapsedTime = totalElapsedTime(elapsedTime); 
-			printContextSwitch(elapsedTime, pSorted[j-1].getpId(), pSorted[j].getpId());
-			
+			printContextSwitch(elapsedTime, pSorted[j-1].getpId(), pSorted[j].getpId());	
 			elapsedTime = totalElapsedTime(elapsedTime); 
 		} 
 		pSorted[j].setWaitTime(elapsedTime);
