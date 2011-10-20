@@ -229,6 +229,12 @@ Sim* sortProcesses(Sim* p, const int size){
 // Preemptive Shortest-Job First (SJF)
 void psjf(Sim* p, int size)
 {
+	int minTurn = p[0].getTurnTime(), maxTurn = 0, turnT = 0, minInitial = p[0].getITime(), 
+		maxInitial = 0, initialT = 0, minWait = p[0].getWaitTime(), maxWait = 0, totalW = 0;  
+	,m.;l
+	cout << "\n\n\nShortest Job First with Preemption | Send Processes to CPU and run: \n";
+
+	elapsedTime = 0;
 }
 
 // Round-Robin (RR)
