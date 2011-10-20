@@ -100,12 +100,12 @@ Sim* createProcesses(const int size){
 	Sim* pA = new Sim[size];	
 	// the seed value for the random number generator
 	srand(time(0));				 
-	int temp = 0, tempA = 0, cpuTime, priority; 
+	int temp = 0, tempA = 0, cpuTime, priority, i; 
 
 	/* the for loop creates the dummy processes that will be sent into the 
 	 * functions for testing the algorithms. The for loop will create the 
 	 * process by giving it a random CPU time and priority number */ 
-	for (int i = 0; i < size; i++){
+	for (i = 0; i < size; i++){
 		cpuTime = rand() % 7000 + 500;  // This generates a random number between 500 - 7500
 		priority = rand() % 5; 	        // this generates a random number between 0 and 4 
 		Sim process(i+1, cpuTime, priority ); 
@@ -128,19 +128,19 @@ Sim* createProcesses(const int size){
 	}
 	
 	temp = size * .25;  //sets temp to 25% of all processes with a decimal that gets chopped off
-	temp++; 
+	//temp++; 
 	for(i = 0; i < temp; i ++){ pA[i].setATime(0); } // sets the first 25% to 0 arrival time
 	
 	tempA = size - temp; //sets temp to the amount of the rest of the processes 
-	for(i = temp; i < tempA; i ++) { 
-		aTime = rand() % 2400 + 100; // random number between 100 and 2500 
+	for(i = temp; i < size; i ++) { 
+		int aTime = rand() % 2400 + 100; // random number between 100 and 2500 
 		pA[i].setATime(aTime); 
 	}
 		
 	
 	//printProcessCreate(pA, size);
 	for(i = 0; i < size; i ++) {
-		printProcessCreate(p[i].getATime(), p[i].getpId(), p[i].getcTime());
+		printProcessCreate(pA[i].getATime(), pA[i].getpId(), pA[i].getcTime());
 	}
 	return pA; 
 }
