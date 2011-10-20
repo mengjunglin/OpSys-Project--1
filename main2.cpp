@@ -10,6 +10,7 @@
 #include <memory>
 #include <iomanip> 
 #include <fstream>
+#include <vector>
 
 using namespace std;
 
@@ -80,8 +81,8 @@ int main(int argc, char * argv[])
 	else {
 		// Send the processes to the different functions 
 		fcfs(pArr, n); 
-		sjf(pArr, n); 
-		psjf(pArr, n); 
+		//sjf(pArr, n); 
+		//psjf(pArr, n); 
 		rr(pArr, n); 
 		pp(pArr, n); 
 	}
@@ -127,6 +128,10 @@ Sim* createProcesses(const int size){
 		pA[i].setTurnTime( eTemp );
 		pA[i].setTimeRemain( pA[i].getcTime() );
 	}
+	//for (int d = 0; d < size; d++)
+	//{
+	//	cout << "***CPU Time is " << pA[d].getcTime() << " and timeRemain is " << pA[d].getTimeRemain() << endl;
+	//}
 	
 	temp = size * .25;  //sets temp to 25% of all processes with a decimal that gets chopped off 
 	for(i = 0; i < temp; i ++){ pA[i].setATime(0); } // sets the first 25% to 0 arrival time
@@ -166,10 +171,10 @@ void fcfs(Sim* p, int size)
 			elapsedTime = totalElapsedTime(elapsedTime); 
 		}
 		p[j].setiTime(elapsedTime);
-		p[j].setWaitTime(elapsedTime);
+		p[j].setWaitTime(elapsedTime-p[j].getATime());	//subtract from its arrival time
 		printFirst(elapsedTime, p[j].getpId(), p[j].getITime());
 		elapsedTime += p[j].getcTime();
-		p[j].setTurnTime(elapsedTime);
+		p[j].setTurnTime(elapsedTime-p[j].getATime());	//subtract from its arrival time
 		printTerminate(elapsedTime, p[j].getpId(), p[j].getTurnTime(), p[j].getWaitTime());
 	} 
 	dataToCollect(p, size, minTurn, maxTurn, turnT, minInitial, maxInitial, initialT, minWait, maxWait, totalW);
@@ -190,7 +195,6 @@ void sjf(Sim* p, int size)
 
 	/* Sort the processes based on the CPU time once the processes 
 	 * are sorted then run the simulation similar to FCFS */ 
-	//Sim*  pSorted = sortProcesses(p, size);
 	Sim* pSorted = new Sim[size];
 	for(int x = 0; x < size; x ++) 
 	{ 
@@ -282,38 +286,62 @@ void rr(Sim* p, int size)
 	int counter = 0; 
 	int store;  // stores the pidId of the last variable
 	bool firstTime = true; 
+	vector <Sim> arrived;	//vector that stores the processes that arrived
+
+	//if the process arrives at time 0, push it back into the vector
+	for (int k = 0; k < size; k++)
+	{
+		if(p[k].getATime() == 0)
+		{
+			arrived.push_back(p[k]);
+		}
+	}
+
+	for (int d = 0; d < size; d++)
+	{
+		cout << "CPU Time is " << p[d].getcTime() << " and timeRemain is " << p[d].getTimeRemain() << endl;
+	}
+
+	int temptime;
+
 	while(counter != size) 
 	{
 		counter = 0; // re-set counter since counter != size in the last iteration therefore not all the processes are finished
-		for (int j = 0; j < size; j++)
+		for(int k = arrived.size(); k < size; k++)
 		{
-			
-			if (p[j].getTimeRemain() != 0)
+			if ((elapsedTime+100*(arrived.size())) >= p[k].getATime())
 			{
-				if(firstTime != true && store != p[j].getpId())
+				arrived.push_back(p[k]);
+			}
+		}
+		for (int j = 0; j < arrived.size(); j++)
+		{
+			if (arrived[j].getTimeRemain() != 0)
+			{
+				if(firstTime != true && store != arrived[j].getpId())
 				{ 
 					elapsedTime = totalElapsedTime(elapsedTime);
-					printContextSwitch(elapsedTime, store, p[j].getpId()); 
+					printContextSwitch(elapsedTime, store, arrived[j].getpId()); 
 					elapsedTime = totalElapsedTime(elapsedTime);
-					p[j].setWaitTime(elapsedTime-p[j].getcTime());
+					arrived[j].setWaitTime(elapsedTime-arrived[j].getcTime());
 				}
-				if (p[j].getcTime() == p[j].getTimeRemain())
-			{
-				p[j].setWaitTime(elapsedTime);
-				printFirst(elapsedTime, p[j].getpId(), p[j].getWaitTime());	
-			}
-				elapsedTime = elapsedTime + 100;
-				p[j].setTimeRemain( p[j].getTimeRemain() - timeSlice );
-				if (p[j].getTimeRemain() <= 0)				// if remain time == 0, print "terminate"
+				if (arrived[j].getcTime() == arrived[j].getTimeRemain())
 				{
-					int check = abs(p[j].getTimeRemain());  // Checks to see if the program terminated before the timeslice
-					elapsedTime = elapsedTime - check; 		//subtract off the time that this slice did not use 
-					p[j].setTimeRemain(0); 					//sets the time to 0
-					p[j].setTurnTime(elapsedTime);
-					printTerminate(elapsedTime, p[j].getpId(), p[j].getTurnTime(), p[j].getWaitTime()); 
+					arrived[j].setWaitTime(elapsedTime);
+					printFirst(elapsedTime, arrived[j].getpId(), arrived[j].getWaitTime());	
+				}
+				elapsedTime = elapsedTime + 100;
+				arrived[j].setTimeRemain( arrived[j].getTimeRemain() - timeSlice );
+				if (arrived[j].getTimeRemain() < 0)				// if remain time == 0, print "terminate"
+				{
+					int check = timeSlice + arrived[j].getTimeRemain(); // Checks to see if the program terminated before the timeslice
+					elapsedTime = elapsedTime - 100 + check; 		//subtract off the time that this slice did not use 
+					arrived[j].setTimeRemain(0); 					//sets the time to 0
+					arrived[j].setTurnTime(elapsedTime);
+					printTerminate(elapsedTime, arrived[j].getpId(), arrived[j].getTurnTime(), arrived[j].getWaitTime()); 
 					counter++; 								// This processes is now added to the "ended" counter 
 				}
-				store = p[j].getpId(); 
+				store = arrived[j].getpId(); 
 			}
 			else{ counter++; }
 			firstTime = false; 
