@@ -245,7 +245,12 @@ void psjf(Sim* p, int size)
 
 
 
+	//while there are still process remain
+	for (int i = 0; i < size; i++)
+	{
 
+	}
+	
 }
 
 // Round-Robin (RR)
@@ -361,7 +366,7 @@ void dataToCollect(Sim* p, int size, int minTurnAround, int maxTurnAround, int t
 	tempTime = (double)totalWait/(double)size; 
 	cout << "Average Wait Time: " << tempTime << "\n\n";
 
-
+	 
 }
 
 
