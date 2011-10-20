@@ -27,6 +27,7 @@ void dataToCollect(Sim* p, int size, int minTurnAround, int maxTurnAround,
 					int totalWait);
 Sim* sortProcesses(Sim* p, int size); 
 Sim* sortPriority(Sim* p, const int size);
+Sim* sortArrivalTime(Sim* p, const int size);
 void printProcessCreate(int arrTime, int pId, int cpu);
 void printContextSwitch(int waitTime, int location1, int location2);
 void printFirst(int eTime, int pId, int waitTime);
@@ -127,8 +128,7 @@ Sim* createProcesses(const int size){
 		pA[i].setTimeRemain( pA[i].getcTime() );
 	}
 	
-	temp = size * .25;  //sets temp to 25% of all processes with a decimal that gets chopped off
-	//temp++; 
+	temp = size * .25;  //sets temp to 25% of all processes with a decimal that gets chopped off 
 	for(i = 0; i < temp; i ++){ pA[i].setATime(0); } // sets the first 25% to 0 arrival time
 	
 	tempA = size - temp; //sets temp to the amount of the rest of the processes 
@@ -137,15 +137,15 @@ Sim* createProcesses(const int size){
 		pA[i].setATime(aTime); 
 	}
 		
-	
-	//printProcessCreate(pA, size);
 	for(i = 0; i < size; i ++) {
 		printProcessCreate(pA[i].getATime(), pA[i].getpId(), pA[i].getcTime());
 	}
+	Sim* sortArrivalTime(pA, size);
+	
 	return pA; 
 }
 
-* First-Come First Served(FCFS) The processes will get sent into this function and then worked on in 
+/* First-Come First Served(FCFS) The processes will get sent into this function and then worked on in 
  * a first-come-first-served basis so the first process in is the first process to run and terminate */ 
 void fcfs(Sim* p, int size)
 {
@@ -392,6 +392,23 @@ Sim* sortPriority(Sim* p, const int size)
 	} 
 	return p; 
 }
+/* sorts by arrival time and then 
+ * sorts by the CPU time */ 
+Sim* sortArrivalTime(Sim* p, const int size)
+{ 
+	for(int i = 0; i < size; i ++) 
+	{ 
+		for(int j = 0; j < size; j++)
+		{
+			if (p[i].getATime() < p[j].getATime())
+			{
+				swap(p[i],p[j]);
+			}	
+		}
+	} 
+	return p; 
+}
+
 
 void dataToCollect(Sim* p, int size, int minTurnAround, int maxTurnAround, int turnTotal, int minInitialWait, 
 	int maxInitialWait, int initialTotal, int minWaitTime, int maxWaitTime, int totalWait){
