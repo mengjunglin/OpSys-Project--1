@@ -131,7 +131,7 @@ Sim* createProcesses(const int size){
 	temp = size * .25;  //sets temp to 25% of all processes with a decimal that gets chopped off 
 	for(i = 0; i < temp; i ++){ pA[i].setATime(0); } // sets the first 25% to 0 arrival time
 	
-	tempA = size - temp; //sets temp to the amount of the rest of the processes 
+	//tempA = size - temp; //sets temp to the amount of the rest of the processes 
 	for(i = temp; i < size; i ++) { 
 		int aTime = rand() % 2400 + 100; // random number between 100 and 2500 
 		pA[i].setATime(aTime); 
@@ -140,7 +140,8 @@ Sim* createProcesses(const int size){
 	for(i = 0; i < size; i ++) {
 		printProcessCreate(pA[i].getATime(), pA[i].getpId(), pA[i].getcTime());
 	}
-	Sim* sortArrivalTime(pA, size);
+
+	sortArrivalTime(pA, size);
 	
 	return pA; 
 }
@@ -166,13 +167,10 @@ void fcfs(Sim* p, int size)
 		}
 		p[j].setiTime(elapsedTime);
 		p[j].setWaitTime(elapsedTime);
-		printFirst(elapsedTime, j+1, p[j].getITime());
+		printFirst(elapsedTime, p[j].getpId(), p[j].getITime());
 		elapsedTime += p[j].getcTime();
 		p[j].setTurnTime(elapsedTime);
-		cout << "[time " << elapsedTime << "ms] Process " << j+1 
-			<< " terminated (turnaround time " << p[j].getTurnTime() 
-			<< "ms, wait time " << p[j].getWaitTime() << "ms)\n"; 
-		//printTerminate(elapsedTime, p[j]., int tTime, int waitTime)
+		printTerminate(elapsedTime, p[j].getpId(), p[j].getTurnTime(), p[j].getWaitTime());
 	} 
 	dataToCollect(p, size, minTurn, maxTurn, turnT, minInitial, maxInitial, initialT, minWait, maxWait, totalW);
 }
@@ -221,10 +219,8 @@ void sjf(Sim* p, int size)
 	{ 
 		if (j != 0)
 		{
-			//printContextSwitch(pSorted[j].getWaitTime(), j);
 			elapsedTime = totalElapsedTime(elapsedTime); 
-			printContextSwitch(elapsedTime, pSorted[j-1].getpId(), pSorted[j].getpId());
-			
+			printContextSwitch(elapsedTime, pSorted[j-1].getpId(), pSorted[j].getpId());			
 			elapsedTime = totalElapsedTime(elapsedTime); 
 		} 
 		pSorted[j].setWaitTime(elapsedTime);
@@ -404,9 +400,9 @@ Sim* sortArrivalTime(Sim* p, const int size)
 { 
 	for(int i = 0; i < size; i ++) 
 	{ 
-		for(int j = 0; j < size; j++)
+		for(int j = i+1; j < size; j++)
 		{
-			if (p[i].getATime() < p[j].getATime())
+			if (p[i].getATime() > p[j].getATime())
 			{
 				swap(p[i],p[j]);
 			}	
