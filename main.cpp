@@ -26,9 +26,9 @@ void dataToCollect(Sim* p, int size, int minTurnAround, int maxTurnAround,
 					int initialTotal, int minWaitTime, int maxWaitTime, 
 					int totalWait);
 Sim* sortProcesses(Sim* p, int size); 
-Sim* sortPriority(Sim* p, const int size);
 void printProcessCreate(Sim* p, const int size);
 void printContextSwitch(int waitTime, int location1, int location2);
+void printCPUFirstTime(Sim* p, int size);
 void printFirst(int eTime, int pId, int waitTime);
 void printTerminate(int eTime, int pId, int tTime, int waitTime); 
 bool compareSim(Sim a, Sim b);
@@ -206,7 +206,7 @@ void sjf(Sim* p, int size)
 		if (j != 0)
 		{
 			//printContextSwitch(pSorted[j].getWaitTime(), j);
-			elapsedTime = totalElapsedTime(elapsedTime); 
+			elapsedTime = totalElapsedTime(pSorted[j].getWaitTime()); 
 			printContextSwitch(elapsedTime, pSorted[j-1].getpId(), pSorted[j].getpId());
 			
 			elapsedTime = totalElapsedTime(elapsedTime); 
@@ -242,12 +242,8 @@ Sim* sortProcesses(Sim* p, const int size)
 // Preemptive Shortest-Job First (SJF)
 void psjf(Sim* p, int size)
 {
-	int minTurn = p[0].getTurnTime(), maxTurn = 0, turnT = 0, minInitial = p[0].getITime(), 
-		maxInitial = 0, initialT = 0, minWait = p[0].getWaitTime(), maxWait = 0, totalW = 0;  
 
-	cout << "\n\n\nShortest Job First with Preemption | Send Processes to CPU and run: \n";
 
-	elapsedTime = 0;
 
 
 }
@@ -281,10 +277,10 @@ void rr(Sim* p, int size)
 					p[j].setWaitTime(elapsedTime-p[j].getcTime());
 				}
 				if (p[j].getcTime() == p[j].getTimeRemain())
-			{
-				p[j].setWaitTime(elapsedTime);
-				printFirst(elapsedTime, p[j].getpId(), p[j].getWaitTime());	
-			}
+				{
+					p[j].setWaitTime(elapsedTime);
+					printFirst(elapsedTime, p[j].getpId(), p[j].getWaitTime());	
+				}
 				elapsedTime = elapsedTime + 100;
 				p[j].setTimeRemain( p[j].getTimeRemain() - timeSlice );
 				if (p[j].getTimeRemain() <= 0)				// if remain time == 0, print "terminate"
@@ -308,74 +304,7 @@ void rr(Sim* p, int size)
 // Preemptive Priority (PP) 
 void pp(Sim* p, int size)
 {
-	int tempWait = 0, minTurn = p[0].getTurnTime(), maxTurn = 0, turnT = 0, minInitial = p[0].getITime(), 
-		maxInitial = 0, initialT = 0, minWait = p[0].getWaitTime(), maxWait = 0, totalW = 0;  
-
-	elapsedTime = 0;
-
-	for (int i = 0; i < size; i++)
-	{
-		cout << "Process " << p[i].getpId() << " has a priority of " << p[i].getP() << endl;
-	}
-
-	cout << "\n\n\nPreemptive-Priority | Send Processes to CPU and run: \n";
-
-	Sim* pSorted = new Sim[size];
-	for(int x = 0; x < size; x ++) 
-	{ 
-		pSorted[x].setCTime(p[x].getcTime());
-		pSorted[x].setiTime(p[x].getITime());
-		pSorted[x].setTerminateTime(p[x].getTerminateTime());
-		pSorted[x].setTimeRemain(p[x].getTimeRemain());
-		pSorted[x].setTurnTime(p[x].getTurnTime());
-		pSorted[x].setWaitTime(p[x].getWaitTime());
-		pSorted[x].setP(p[x].getP()); 
-		pSorted[x].setPidId(p[x].getpId());
-	}
-
-	sortPriority(pSorted,size);
-	pSorted[0].setWaitTime(tempWait);
-	for(int i = 1; i < size; i++)
-	{
-		tempWait += pSorted[i-1].getcTime();
-		pSorted[i].setWaitTime(tempWait);
-		pSorted[i].setiTime(tempWait);
-	}
-
-	for(int j = 0; j < size; j++) 
-	{ 
-		if (j != 0)
-		{
-			//printContextSwitch(pSorted[j].getWaitTime(), j);
-			elapsedTime = totalElapsedTime(elapsedTime); 
-			printContextSwitch(elapsedTime, pSorted[j-1].getpId(), pSorted[j].getpId());
-			
-			elapsedTime = totalElapsedTime(elapsedTime); 
-		} 
-		pSorted[j].setWaitTime(elapsedTime);
-		printFirst(elapsedTime, pSorted[j].getpId(), pSorted[j].getWaitTime());	
-		elapsedTime+=pSorted[j].getcTime(); 
-		pSorted[j].setTurnTime(elapsedTime);
-		printTerminate(elapsedTime, pSorted[j].getpId(), pSorted[j].getTurnTime(), pSorted[j].getWaitTime()); 
-	} 
-
-	dataToCollect(pSorted, size, minTurn, maxTurn, turnT, minInitial, maxInitial, initialT, minWait, maxWait, totalW);
-}
-
-Sim* sortPriority(Sim* p, const int size)
-{ 
-	for(int i = 0; i < size; i ++) 
-	{ 
-		for(int j = 0; j < size; j++)
-		{
-			if (p[i].getP() < p[j].getP())
-			{
-				swap(p[i],p[j]);
-			}
-		}
-	} 
-	return p; 
-}
+} 
 
 void dataToCollect(Sim* p, int size, int minTurnAround, int maxTurnAround, int turnTotal, int minInitialWait, 
 	int maxInitialWait, int initialTotal, int minWaitTime, int maxWaitTime, int totalWait){
@@ -472,5 +401,11 @@ int totalElapsedTime(int eTime){
 	eTime+=4; 
 	return eTime; 
 }
+
+void printCPUFirstTime(Sim* p, int size){
+
+}
+
+
 
 #endif
