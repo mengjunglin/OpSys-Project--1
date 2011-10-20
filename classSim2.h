@@ -15,6 +15,7 @@ private:
 	int terminateTime;
 	int waitTime;
 	int timeRemain;
+	int arrivalTime; 
 
 public: 
 	Sim(); 
@@ -27,7 +28,9 @@ public:
 	void setTimeRemain(int tRemain);
 	void setPidId(int pId); 
 	void setP(int p);
+	void setATime(int a); 
 	int getpId(); 
+	int getATime(); 
 	int getcTime(); 
 	int getP(); 
 	int getITime(); 
@@ -57,6 +60,7 @@ Sim::Sim( int pId, int cTime, int p ){
 	terminateTime = 0; 
 	waitTime = 0;
 	timeRemain = 0;
+	arrivalTime = 0; 
 }
 
 void Sim::setCTime(int cTime){
@@ -87,6 +91,10 @@ void Sim::setPidId(int pId){
 }
 void Sim::setP(int p){
 	priority = p; 
+}
+
+void Sim::setATime(int a){ 
+	arrivalTime = a; 
 }
 
 int Sim::getpId(){ 
@@ -121,7 +129,9 @@ int Sim::getTimeRemain(){
 	return timeRemain;
 }
 
-
+int Sim::getATime(){
+	return arrivalTime; 
+}
 
 
 

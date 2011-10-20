@@ -5,7 +5,7 @@
 #include <iostream>
 #include <time.h>
 #include <ctime>
-#include "classSim.h"
+#include "classSim2.h"
 #include <string>
 #include <memory>
 #include <iomanip> 
@@ -27,7 +27,7 @@ void dataToCollect(Sim* p, int size, int minTurnAround, int maxTurnAround,
 					int totalWait);
 Sim* sortProcesses(Sim* p, int size); 
 Sim* sortPriority(Sim* p, const int size);
-void printProcessCreate(Sim* p, const int size);
+void printProcessCreate(int arrTime, int pId, int cpu);
 void printContextSwitch(int waitTime, int location1, int location2);
 void printFirst(int eTime, int pId, int waitTime);
 void printTerminate(int eTime, int pId, int tTime, int waitTime); 
@@ -100,19 +100,20 @@ Sim* createProcesses(const int size){
 	Sim* pA = new Sim[size];	
 	// the seed value for the random number generator
 	srand(time(0));				 
+	int temp = 0, tempA = 0, cpuTime, priority; 
 
 	/* the for loop creates the dummy processes that will be sent into the 
 	 * functions for testing the algorithms. The for loop will create the 
 	 * process by giving it a random CPU time and priority number */ 
 	for (int i = 0; i < size; i++){
-		int cpuTime = rand() % 7000 + 500;  // This generates a random number between 500 - 7500
-		int priority = rand() % 5; 	        // this generates a random number between 0 and 4 
+		cpuTime = rand() % 7000 + 500;  // This generates a random number between 500 - 7500
+		priority = rand() % 5; 	        // this generates a random number between 0 and 4 
 		Sim process(i+1, cpuTime, priority ); 
 		pA[i] = process;  
 	}
 	cout << "Create Processes: \n"; 
 	int tempWait = 0, eTemp;
-	for (int i = 0; i < size; i++)
+	for (i = 0; i < size; i++)
 	{
 		if (i != 0){
 			tempWait += pA[i-1].getcTime();
@@ -126,7 +127,21 @@ Sim* createProcesses(const int size){
 		pA[i].setTimeRemain( pA[i].getcTime() );
 	}
 	
-	printProcessCreate(pA, size);
+	temp = size * .25;  //sets temp to 25% of all processes with a decimal that gets chopped off
+	temp++; 
+	for(i = 0; i < temp; i ++){ pA[i].setATime(0); } // sets the first 25% to 0 arrival time
+	
+	tempA = size - temp; //sets temp to the amount of the rest of the processes 
+	for(i = temp; i < tempA; i ++) { 
+		aTime = rand() % 2400 + 100; // random number between 100 and 2500 
+		pA[i].setATime(aTime); 
+	}
+		
+	
+	//printProcessCreate(pA, size);
+	for(i = 0; i < size; i ++) {
+		printProcessCreate(p[i].getATime(), p[i].getpId(), p[i].getcTime());
+	}
 	return pA; 
 }
 
@@ -341,7 +356,8 @@ void pp(Sim* p, int size)
 		pSorted[i].setWaitTime(tempWait);
 		pSorted[i].setiTime(tempWait);
 	}
-
+	
+	
 	for(int j = 0; j < size; j++) 
 	{ 
 		if (j != 0)
@@ -440,13 +456,10 @@ void dataToCollect(Sim* p, int size, int minTurnAround, int maxTurnAround, int t
 #ifndef printFunctions 
 /* printProcessCreate will print the processes that were 
  * created in the Sim array */ 
-void printProcessCreate(Sim* p, int size)
+void printProcessCreate(int arrTime, int pId, int cpu)
 { 
-	for(int i = 0; i < size; i ++)
-	{
-		cout << "[time " << elapsedTime << "ms] Process " << p[i].getpId() 
-			<< " created (requiring " << p[i].getcTime() << "ms CPU time)\n";
-	}
+		cout << "[time " << arrTime << "ms] Process " << pId 
+			<< " created (requiring " << cpu << "ms CPU time)\n";
 }
 
 void printContextSwitch(int waitTime, int location1, int location2)
