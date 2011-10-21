@@ -425,6 +425,7 @@ void pp(Sim* p, int size)
 			printContextSwitch(elapsedTime, temp.getpId(), arrived[0].getpId());			
 			elapsedTime = totalElapsedTime(elapsedTime);  
 		} 
+		
 		firstTime = false; 
 	}
 }
