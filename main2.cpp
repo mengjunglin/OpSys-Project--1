@@ -11,6 +11,7 @@
 #include <iomanip> 
 #include <fstream>
 #include <vector>
+#include <algorithm>
 
 using namespace std;
 
@@ -26,9 +27,11 @@ void dataToCollect(Sim* p, int size, int minTurnAround, int maxTurnAround,
 					int turnTotal, int minInitialWait, int maxInitialWait, 
 					int initialTotal, int minWaitTime, int maxWaitTime, 
 					int totalWait);
-Sim* sortProcesses(Sim* p, int size); 
+Sim* sortProcesses(Sim* p, int size);
+void sortPriority(vector<Sim> &a);
 Sim* sortPriority(Sim* p, const int size);
 Sim* sortArrivalTime(Sim* p, const int size);
+bool compareCPU(Sim a, Sim b); 
 void printProcessCreate(int arrTime, int pId, int cpu);
 void printContextSwitch(int waitTime, int location1, int location2);
 void printFirst(int eTime, int pId, int waitTime);
@@ -192,51 +195,61 @@ void sjf(Sim* p, int size)
 		totalW = 0;  
 
 	elapsedTime = 0; 
+	vector <Sim> arrived;
 
-	/* Sort the processes based on the CPU time once the processes 
-	 * are sorted then run the simulation similar to FCFS */ 
-	Sim* pSorted = new Sim[size];
-	for(int x = 0; x < size; x ++) 
-	{ 
-		pSorted[x].setCTime(p[x].getcTime());
-		pSorted[x].setiTime(p[x].getITime());
-		pSorted[x].setTerminateTime(p[x].getTerminateTime());
-		pSorted[x].setTimeRemain(p[x].getTimeRemain());
-		pSorted[x].setTurnTime(p[x].getTurnTime());
-		pSorted[x].setWaitTime(p[x].getWaitTime());
-		pSorted[x].setP(p[x].getP()); 
-		pSorted[x].setPidId(p[x].getpId());
-	}
+	int check = 1; 
 
-	sortProcesses(pSorted,size);
-	pSorted[0].setWaitTime(tempWait);
-	for(int i = 1; i < size; i++)
+	//push it into vector if it arrives at time 0
+	for(int i = 0; i < size; i++)
 	{
-		tempWait += pSorted[i-1].getcTime();
-		pSorted[i].setWaitTime(tempWait);
-		pSorted[i].setiTime(tempWait);
+		if (p[i].getATime() == 0)
+		{
+			arrived.push_back(p[i]);
+			check = i + 1;
+		}
 	}
+
+	sort(arrived.begin(), arrived.end(), compareCPU); 
 
 	cout << "\n\n\nShortest Job First without Preemption | Send Processes to CPU and run: \n"; 
-
-	for(int j = 0; j < size; j++) 
+	
+	//for(int j = 0; j < size; j++) 
+	int counter = 0;
+	bool firstTime = true; 
+	Sim temp; 
+	while(counter != size)
 	{ 
-		if (j != 0)
+		for(int i = check; i < size; i++)
+		{
+			int totalTime = arrived[0].getcTime() + elapsedTime;
+			if (totalTime > p[i].getATime())
+			{
+				arrived.push_back(p[i]);
+				check = i + 1;
+			}
+		}
+		temp = arrived[0];
+		arrived.erase(arrived.begin()); // this process will have terminated so it can be removed from the vector
+		sort(arrived.begin(), arrived.end(), compareCPU); // sorts all the processes that will be in the vector after the one terminates
+
+		temp.setWaitTime(elapsedTime);
+		printFirst(elapsedTime, temp.getpId(), temp.getWaitTime());	
+		elapsedTime+=temp.getcTime(); 
+		temp.setTurnTime(elapsedTime);
+		printTerminate(elapsedTime, temp.getpId(), temp.getTurnTime(), temp.getWaitTime()); 
+		firstTime = false;
+		counter ++; 
+
+		if (!firstTime && !arrived.empty( ))
 		{
 			elapsedTime = totalElapsedTime(elapsedTime); 
-			printContextSwitch(elapsedTime, pSorted[j-1].getpId(), pSorted[j].getpId());			
-			elapsedTime = totalElapsedTime(elapsedTime); 
+			printContextSwitch(elapsedTime, temp.getpId(), arrived[0].getpId());			
+			elapsedTime = totalElapsedTime(elapsedTime);  
 		} 
-		pSorted[j].setWaitTime(elapsedTime);
-		printFirst(elapsedTime, pSorted[j].getpId(), pSorted[j].getWaitTime());	
-		elapsedTime+=pSorted[j].getcTime(); 
-		pSorted[j].setTurnTime(elapsedTime);
-		printTerminate(elapsedTime, pSorted[j].getpId(), pSorted[j].getTurnTime(), pSorted[j].getWaitTime()); 
+		
 	} 
 
-	dataToCollect(pSorted, size, minTurn, maxTurn, turnT, minInitial, maxInitial, initialT, minWait, maxWait, totalW);
-
-
+	dataToCollect(p, size, minTurn, maxTurn, turnT, minInitial, maxInitial, initialT, minWait, maxWait, totalW);
 }
 
 Sim* sortProcesses(Sim* p, const int size)
@@ -297,10 +310,6 @@ void rr(Sim* p, int size)
 		}
 	}
 
-	for (int d = 0; d < size; d++)
-	{
-		cout << "CPU Time is " << p[d].getcTime() << " and timeRemain is " << p[d].getTimeRemain() << endl;
-	}
 
 	int temptime;
 
@@ -358,6 +367,8 @@ void pp(Sim* p, int size)
 
 	vector <Sim> arrived;	//vector to store processes that has arrived
 	int counter = 0;
+	int store = 0;
+	bool firstTime = true;
 
 	elapsedTime = 0;
 
@@ -368,28 +379,6 @@ void pp(Sim* p, int size)
 
 	cout << "\n\n\nPreemptive-Priority | Send Processes to CPU and run: \n";
 
-	*Sim* pSorted = new Sim[size];
-	for(int x = 0; x < size; x ++) 
-	{ 
-		pSorted[x].setCTime(p[x].getcTime());
-		pSorted[x].setiTime(p[x].getITime());
-		pSorted[x].setTerminateTime(p[x].getTerminateTime());
-		pSorted[x].setTimeRemain(p[x].getTimeRemain());
-		pSorted[x].setTurnTime(p[x].getTurnTime());
-		pSorted[x].setWaitTime(p[x].getWaitTime());
-		pSorted[x].setP(p[x].getP()); 
-		pSorted[x].setPidId(p[x].getpId());
-	}
-	//I don't think we should sort by priority since it is already sorted in arrival time
-	/*
-	sortPriority(pSorted,size);
-	pSorted[0].setWaitTime(tempWait);
-	for(int i = 1; i < size; i++)
-	{
-		tempWait += pSorted[i-1].getcTime();
-		pSorted[i].setWaitTime(tempWait);
-		pSorted[i].setiTime(tempWait);
-	}*/
 
 	//push process into the vector if the arrival time is 0
 	for (int i = 0; i < size; i++)
@@ -399,17 +388,80 @@ void pp(Sim* p, int size)
 			arrived.push_back(p[i]);
 		}
 	}
-	
-	//while there are still process running
-	while(counter != size) 
+
+	//Sort "arrived" by priority
+	sortPriority(arrived);
+
+	while(counter != size)
 	{
-		counter = 0; // re-set counter since counter != size in the last iteration therefore not all the processes are finished
-		//if the next process arrives before the burrent process finish running, THEN push_back(new process) & pause when new process arrives
-		//////compare priority of current and new
-		//////if new.getP < current.getP, THEN run new
+		int checkArrival; 
+		int timeShortest = 8000;
+		bool found = false; 
+		for (int i = 0; i < size; i++)
+		{	
+			//if the next process arrives before the current process finish running, THEN push_back(new process) & pause when new process arrives
+			if ((arrived[0].getTimeRemain() + elapsedTime) > p[i].getATime())
+			{
+				if(p[i].getATime() < timeShortest)
+				{
+					timeShortest = p[i].getATime(); 
+				}
+				found = true;
+			}
+		}
+
+		if(found == true)
+		{ 
+			arrived[0].setTimeRemain(elapsedTime - arrived[0].getcTime());	// set the remain time for current process
+			elapsedTime = elapsedTime - arrived[0].getTimeRemain(); 
+			for(int i = 0; i < size; i ++)
+			{ 
+				if(p[i].getATime() == timeShortest) 
+				{
+					arrived.push_back(p[i]);
+				}
+			}
+			sortPriority(arrived);
+		}
+		for(int i = 0; i < arrived.size(); i++)
+		{
+			if (arrived[i].getTimeRemain() != 0)
+			{
+				if(firstTime != true && store != arrived[i].getpId())
+				{ 
+					elapsedTime = totalElapsedTime(elapsedTime);
+					printContextSwitch(elapsedTime, store, arrived[i].getpId()); 
+					elapsedTime = totalElapsedTime(elapsedTime);
+					arrived[i].setWaitTime(elapsedTime-arrived[i].getcTime());
+				}
+				if (arrived[i].getcTime() == arrived[i].getTimeRemain())
+				{
+					arrived[i].setWaitTime(elapsedTime);
+					printFirst(elapsedTime, arrived[i].getpId(), arrived[i].getWaitTime());	
+				}
+				
+				//arrived[i].setTimeRemain(0);
+				elapsedTime = elapsedTime + arrived[i].getcTime() - arrived[i].getTimeRemain();
+				if (arrived[i].getTimeRemain() < 0)				// if remain time == 0, print "terminate"
+				{
+					//int check = timeSlice + arrived[j].getTimeRemain(); // Checks to see if the program terminated before the timeslice
+					
+					
+					arrived[i].setTimeRemain(0); 					//sets the time to 0
+					arrived[i].setTurnTime(elapsedTime);
+					printTerminate(elapsedTime, arrived[i].getpId(), arrived[i].getTurnTime(), arrived[i].getWaitTime()); 
+					counter++; 								// This processes is now added to the "ended" counter 
+				}
+
+				store = arrived[i].getpId(); 
+			}
+			counter++;
+			firstTime = false; 
+		}
 	}
 	
 	
+	/*
 	for(int j = 0; j < size; j++) 
 	{ 
 		if (j != 0)
@@ -424,9 +476,25 @@ void pp(Sim* p, int size)
 		pSorted[j].setTurnTime(elapsedTime);
 		printTerminate(elapsedTime, pSorted[j].getpId(), pSorted[j].getTurnTime(), pSorted[j].getWaitTime()); 
 	} 
-
-	dataToCollect(pSorted, size, minTurn, maxTurn, turnT, minInitial, maxInitial, initialT, minWait, maxWait, totalW);
+	*/
+	//dataToCollect(pSorted, size, minTurn, maxTurn, turnT, minInitial, maxInitial, initialT, minWait, maxWait, totalW);
 }
+
+void sortPriority(vector<Sim> &a){
+
+	//Sort "arrived" by priority
+	for (int i = 0; i < a.size(); i++)
+	{
+		for (int j = i; j < a.size(); j++)
+		{
+			if(a[i].getP() > a[j].getP())
+			{
+				swap(a[i], a[j]);
+			}
+		}
+	}
+}
+
 
 Sim* sortPriority(Sim* p, const int size)
 { 
@@ -500,25 +568,28 @@ void dataToCollect(Sim* p, int size, int minTurnAround, int maxTurnAround, int t
 	cout << setprecision (3) <<endl;
 
 	cout << "\n\n\n"; 
-	cout << "Minimum Turn Around Time: " << minTurnAround << "\n"; 
-	cout << "Maximum Turn Around Time: " << maxTurnAround << "\n"; 
+	cout << "Minimum Turn Around Time: " << (double)minTurnAround << "\n"; 
+	cout << "Maximum Turn Around Time: " << (double)maxTurnAround << "\n"; 
 	tempTime = (double)turnTotal/(double)size; 
 	cout << "Average Turn Around Time: " << tempTime << "\n\n";
 
-	cout << "Minimum Initial Wait Time: " << minInitialWait << "\n"; 
-	cout << "Maximum Initial Wait Time: " << maxInitialWait << "\n"; 
+	cout << "Minimum Initial Wait Time: " << (double)minInitialWait << "\n"; 
+	cout << "Maximum Initial Wait Time: " << (double)maxInitialWait << "\n"; 
 	tempTime = (double)initialTotal/(double)size; 
 	cout << "Average Initial Wait Time: " << tempTime << "\n\n";
 
-	cout << "Minimum Wait Time: " << minWaitTime << "\n"; 
-	cout << "Maximum Wait Time: " << maxWaitTime << "\n"; 
+	cout << "Minimum Wait Time: " << (double)minWaitTime << "\n"; 
+	cout << "Maximum Wait Time: " << (double)maxWaitTime << "\n"; 
 	tempTime = (double)totalWait/(double)size; 
 	cout << "Average Wait Time: " << tempTime << "\n\n";
 
 
 }
 
-
+bool compareCPU(Sim a, Sim b)
+{
+	return a.getcTime() < b.getcTime();
+}
 
 #ifndef printFunctions 
 /* printProcessCreate will print the processes that were 
