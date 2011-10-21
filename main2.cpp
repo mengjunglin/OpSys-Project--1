@@ -11,6 +11,7 @@
 #include <iomanip> 
 #include <fstream>
 #include <vector>
+#include <algorithm>
 
 using namespace std;
 
@@ -26,9 +27,11 @@ void dataToCollect(Sim* p, int size, int minTurnAround, int maxTurnAround,
 					int turnTotal, int minInitialWait, int maxInitialWait, 
 					int initialTotal, int minWaitTime, int maxWaitTime, 
 					int totalWait);
-Sim* sortProcesses(Sim* p, int size); 
+Sim* sortProcesses(Sim* p, int size);
+void sortPriority(vector<Sim> &a);
 Sim* sortPriority(Sim* p, const int size);
 Sim* sortArrivalTime(Sim* p, const int size);
+bool compareCPU(Sim a, Sim b); 
 void printProcessCreate(int arrTime, int pId, int cpu);
 void printContextSwitch(int waitTime, int location1, int location2);
 void printFirst(int eTime, int pId, int waitTime);
@@ -81,10 +84,10 @@ int main(int argc, char * argv[])
 	else {
 		// Send the processes to the different functions 
 		//fcfs(pArr, n); 
-		//sjf(pArr, n); 
+		sjf(pArr, n); 
 		//psjf(pArr, n); 
 		//rr(pArr, n); 
-		pp(pArr, n); 
+		//pp(pArr, n); 
 	}
 	/* 1. Process creation (display the process ID, required CPU time, and priority, if applicable) - DONE for FCFS, DONE for SJF
 	 * 2. Context switch (display the two before/after process IDs involved) - DONE for FCFS, DONE for SJF
@@ -192,51 +195,70 @@ void sjf(Sim* p, int size)
 		totalW = 0;  
 
 	elapsedTime = 0; 
+	vector <Sim> arrived;
 
-	/* Sort the processes based on the CPU time once the processes 
-	 * are sorted then run the simulation similar to FCFS */ 
-	Sim* pSorted = new Sim[size];
-	for(int x = 0; x < size; x ++) 
-	{ 
-		pSorted[x].setCTime(p[x].getcTime());
-		pSorted[x].setiTime(p[x].getITime());
-		pSorted[x].setTerminateTime(p[x].getTerminateTime());
-		pSorted[x].setTimeRemain(p[x].getTimeRemain());
-		pSorted[x].setTurnTime(p[x].getTurnTime());
-		pSorted[x].setWaitTime(p[x].getWaitTime());
-		pSorted[x].setP(p[x].getP()); 
-		pSorted[x].setPidId(p[x].getpId());
-	}
+	int check = 1; 
 
-	sortProcesses(pSorted,size);
-	pSorted[0].setWaitTime(tempWait);
-	for(int i = 1; i < size; i++)
+	//push it into vector if it arrives at time 0
+	for(int i = 0; i < size; i++)
 	{
-		tempWait += pSorted[i-1].getcTime();
-		pSorted[i].setWaitTime(tempWait);
-		pSorted[i].setiTime(tempWait);
+		if (p[i].getATime() == 0)
+		{
+			arrived.push_back(p[i]);
+			check = i + 1;
+		}
 	}
+	for(int i = 0; i < arrived.size(); i++)
+	{
+		cout << "PID = " << arrived[i].getpId() << "  cpu Time = " << arrived[i].getcTime() << "  arrival time = " << arrived[i].getATime() << endl; 
+	}
+	
+	sort(arrived.begin(), arrived.end(), compareCPU); 
 
+	cout << "AFTER SORT" << endl;
+	for(int i = 0; i < arrived.size(); i++)
+	{
+		cout << "PID = " << arrived[i].getpId() << "  cpu Time = " << arrived[i].getcTime() << "  arrival time = " << arrived[i].getATime() << endl; 
+	}
 	cout << "\n\n\nShortest Job First without Preemption | Send Processes to CPU and run: \n"; 
-
-	for(int j = 0; j < size; j++) 
+	
+	//for(int j = 0; j < size; j++) 
+	int counter = 0;
+	bool firstTime = true; 
+	Sim temp; 
+	while(counter != size)
 	{ 
-		if (j != 0)
+		for(int i = check; i < size; i++)
+		{
+			int totalTime = arrived[0].getcTime() + elapsedTime;
+			if (totalTime > p[i].getATime())
+			{
+				arrived.push_back(p[i]);
+				check = i + 1;
+			}
+		}
+		temp = arrived[0];
+		arrived.erase(arrived.begin()); // this process will have terminated so it can be removed from the vector
+		sort(arrived.begin(), arrived.end(), compareCPU); // sorts all the processes that will be in the vector after the one terminates
+
+		temp.setWaitTime(elapsedTime);
+		printFirst(elapsedTime, temp.getpId(), temp.getWaitTime());	
+		elapsedTime+=temp.getcTime(); 
+		temp.setTurnTime(elapsedTime);
+		printTerminate(elapsedTime, temp.getpId(), temp.getTurnTime(), temp.getWaitTime()); 
+		firstTime = false;
+		counter ++; 
+
+		if (!firstTime && !arrived.empty( ))
 		{
 			elapsedTime = totalElapsedTime(elapsedTime); 
-			printContextSwitch(elapsedTime, pSorted[j-1].getpId(), pSorted[j].getpId());			
-			elapsedTime = totalElapsedTime(elapsedTime); 
+			printContextSwitch(elapsedTime, temp.getpId(), arrived[0].getpId());			
+			elapsedTime = totalElapsedTime(elapsedTime);  
 		} 
-		pSorted[j].setWaitTime(elapsedTime);
-		printFirst(elapsedTime, pSorted[j].getpId(), pSorted[j].getWaitTime());	
-		elapsedTime+=pSorted[j].getcTime(); 
-		pSorted[j].setTurnTime(elapsedTime);
-		printTerminate(elapsedTime, pSorted[j].getpId(), pSorted[j].getTurnTime(), pSorted[j].getWaitTime()); 
+		
 	} 
 
-	dataToCollect(pSorted, size, minTurn, maxTurn, turnT, minInitial, maxInitial, initialT, minWait, maxWait, totalW);
-
-
+	dataToCollect(p, size, minTurn, maxTurn, turnT, minInitial, maxInitial, initialT, minWait, maxWait, totalW);
 }
 
 Sim* sortProcesses(Sim* p, const int size)
@@ -357,7 +379,10 @@ void pp(Sim* p, int size)
 		maxInitial = 0, initialT = 0, minWait = p[0].getWaitTime(), maxWait = 0, totalW = 0;  
 
 	vector <Sim> arrived;	//vector to store processes that has arrived
+	//vector <Sim> finished; // vector to store finished processes
 	int counter = 0;
+	int store;
+	bool firstTime = true;
 
 	elapsedTime = 0;
 
@@ -368,7 +393,7 @@ void pp(Sim* p, int size)
 
 	cout << "\n\n\nPreemptive-Priority | Send Processes to CPU and run: \n";
 
-	*Sim* pSorted = new Sim[size];
+	/**Sim* pSorted = new Sim[size];
 	for(int x = 0; x < size; x ++) 
 	{ 
 		pSorted[x].setCTime(p[x].getcTime());
@@ -379,7 +404,7 @@ void pp(Sim* p, int size)
 		pSorted[x].setWaitTime(p[x].getWaitTime());
 		pSorted[x].setP(p[x].getP()); 
 		pSorted[x].setPidId(p[x].getpId());
-	}
+	}*/
 	//I don't think we should sort by priority since it is already sorted in arrival time
 	/*
 	sortPriority(pSorted,size);
@@ -399,17 +424,29 @@ void pp(Sim* p, int size)
 			arrived.push_back(p[i]);
 		}
 	}
+
+	//Sort "arrived" by priority
+	sortPriority(arrived);
 	
-	//while there are still process running
-	while(counter != size) 
+	for (int i = 0; i < arrived.size(); i++)
 	{
-		counter = 0; // re-set counter since counter != size in the last iteration therefore not all the processes are finished
-		//if the next process arrives before the burrent process finish running, THEN push_back(new process) & pause when new process arrives
+		//if the next process arrives before the current process finish running, THEN push_back(new process) & pause when new process arrives
+		if ((arrived[i].getTimeRemain() + elapsedTime) > p[i].getATime())
+		{
+			arrived[i].setTimeRemain(p[i].getATime() - elapsedTime);	//run current process until next arrives, set the remain time for current process
+			arrived.push_back(p[i]);
+			sortPriority(arrived);
+		}
+
+		sortPriority(arrived);
 		//////compare priority of current and new
 		//////if new.getP < current.getP, THEN run new
+//		finished.push_back(p[i]);
+//		arrived.pop_back(p[i]);
 	}
 	
 	
+	/*
 	for(int j = 0; j < size; j++) 
 	{ 
 		if (j != 0)
@@ -424,9 +461,25 @@ void pp(Sim* p, int size)
 		pSorted[j].setTurnTime(elapsedTime);
 		printTerminate(elapsedTime, pSorted[j].getpId(), pSorted[j].getTurnTime(), pSorted[j].getWaitTime()); 
 	} 
-
-	dataToCollect(pSorted, size, minTurn, maxTurn, turnT, minInitial, maxInitial, initialT, minWait, maxWait, totalW);
+	*/
+	//dataToCollect(pSorted, size, minTurn, maxTurn, turnT, minInitial, maxInitial, initialT, minWait, maxWait, totalW);
 }
+
+void sortPriority(vector<Sim> &a){
+
+	//Sort "arrived" by priority
+	for (int i = 0; i < a.size(); i++)
+	{
+		for (int j = i; j < a.size(); j++)
+		{
+			if(a[i].getP() > a[j].getP())
+			{
+				swap(a[i], a[j]);
+			}
+		}
+	}
+}
+
 
 Sim* sortPriority(Sim* p, const int size)
 { 
@@ -518,7 +571,10 @@ void dataToCollect(Sim* p, int size, int minTurnAround, int maxTurnAround, int t
 
 }
 
-
+bool compareCPU(Sim a, Sim b)
+{
+	return a.getcTime() < b.getcTime();
+}
 
 #ifndef printFunctions 
 /* printProcessCreate will print the processes that were 
