@@ -4,8 +4,53 @@ October 20th, 2011
 
 
 Files Attached
--------------------------------------
+--------------------------------------
 main.cpp
 classSim.h
+main2.cpp
+classSim2.h
 
-this?
+
+main.cpp & main2.cpp both output to output.txt in order to view all the output from the files since the terminal could not print enough lines. 
+
+If you wish to use one specific algorithm over another type the algorithm 
+next to the name of the program the algorithms are: 
+
+fcfs
+sjf
+psjf
+pp
+rr
+
+fcfs for first come first serve
+sjf for shortest job first 
+psjf for shortest job first with preemption 
+pp for preemptive piority 
+rr for round robin
+
+the code will run just fine without this option but it is helpful if you wish to use one specific function over another. 
+
+
+
+Part 1: 
+--------------------------------------
+main.cpp & classSim.h 
+
+For all algorithms (fcfs, sjf, psjf, pp, and rr) the file:
+Prints when a process is create 
+Prints when the process accesses the CPU for the first time
+Prints when the process has a context switch (with 8ms taken into account) 
+Prints when the process terminates 
+
+When those prints are done for each function the program: 
+Prints minimum, average, and maximum turn around times 
+Prints minimum, average, and maximum initial wait times
+Prints minimum, average, and maximum total wait times 
+
+All to three decimal places
+
+
+
+Part 2: 
+--------------------------------------
+main2.cpp & classSim2.h
