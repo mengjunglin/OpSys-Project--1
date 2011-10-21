@@ -84,10 +84,10 @@ int main(int argc, char * argv[])
 	else {
 		// Send the processes to the different functions 
 		//fcfs(pArr, n); 
-		sjf(pArr, n); 
+		//sjf(pArr, n); 
 		//psjf(pArr, n); 
 		//rr(pArr, n); 
-		//pp(pArr, n); 
+		pp(pArr, n); 
 	}
 	/* 1. Process creation (display the process ID, required CPU time, and priority, if applicable) - DONE for FCFS, DONE for SJF
 	 * 2. Context switch (display the two before/after process IDs involved) - DONE for FCFS, DONE for SJF
@@ -208,18 +208,9 @@ void sjf(Sim* p, int size)
 			check = i + 1;
 		}
 	}
-	for(int i = 0; i < arrived.size(); i++)
-	{
-		cout << "PID = " << arrived[i].getpId() << "  cpu Time = " << arrived[i].getcTime() << "  arrival time = " << arrived[i].getATime() << endl; 
-	}
-	
+
 	sort(arrived.begin(), arrived.end(), compareCPU); 
 
-	cout << "AFTER SORT" << endl;
-	for(int i = 0; i < arrived.size(); i++)
-	{
-		cout << "PID = " << arrived[i].getpId() << "  cpu Time = " << arrived[i].getcTime() << "  arrival time = " << arrived[i].getATime() << endl; 
-	}
 	cout << "\n\n\nShortest Job First without Preemption | Send Processes to CPU and run: \n"; 
 	
 	//for(int j = 0; j < size; j++) 
@@ -319,10 +310,6 @@ void rr(Sim* p, int size)
 		}
 	}
 
-	for (int d = 0; d < size; d++)
-	{
-		cout << "CPU Time is " << p[d].getcTime() << " and timeRemain is " << p[d].getTimeRemain() << endl;
-	}
 
 	int temptime;
 
@@ -379,9 +366,8 @@ void pp(Sim* p, int size)
 		maxInitial = 0, initialT = 0, minWait = p[0].getWaitTime(), maxWait = 0, totalW = 0;  
 
 	vector <Sim> arrived;	//vector to store processes that has arrived
-	//vector <Sim> finished; // vector to store finished processes
 	int counter = 0;
-	int store;
+	int store = 0;
 	bool firstTime = true;
 
 	elapsedTime = 0;
@@ -393,28 +379,6 @@ void pp(Sim* p, int size)
 
 	cout << "\n\n\nPreemptive-Priority | Send Processes to CPU and run: \n";
 
-	/**Sim* pSorted = new Sim[size];
-	for(int x = 0; x < size; x ++) 
-	{ 
-		pSorted[x].setCTime(p[x].getcTime());
-		pSorted[x].setiTime(p[x].getITime());
-		pSorted[x].setTerminateTime(p[x].getTerminateTime());
-		pSorted[x].setTimeRemain(p[x].getTimeRemain());
-		pSorted[x].setTurnTime(p[x].getTurnTime());
-		pSorted[x].setWaitTime(p[x].getWaitTime());
-		pSorted[x].setP(p[x].getP()); 
-		pSorted[x].setPidId(p[x].getpId());
-	}*/
-	//I don't think we should sort by priority since it is already sorted in arrival time
-	/*
-	sortPriority(pSorted,size);
-	pSorted[0].setWaitTime(tempWait);
-	for(int i = 1; i < size; i++)
-	{
-		tempWait += pSorted[i-1].getcTime();
-		pSorted[i].setWaitTime(tempWait);
-		pSorted[i].setiTime(tempWait);
-	}*/
 
 	//push process into the vector if the arrival time is 0
 	for (int i = 0; i < size; i++)
@@ -427,22 +391,73 @@ void pp(Sim* p, int size)
 
 	//Sort "arrived" by priority
 	sortPriority(arrived);
-	
-	for (int i = 0; i < arrived.size(); i++)
+
+	while(counter != size)
 	{
-		//if the next process arrives before the current process finish running, THEN push_back(new process) & pause when new process arrives
-		if ((arrived[i].getTimeRemain() + elapsedTime) > p[i].getATime())
-		{
-			arrived[i].setTimeRemain(p[i].getATime() - elapsedTime);	//run current process until next arrives, set the remain time for current process
-			arrived.push_back(p[i]);
-			sortPriority(arrived);
+		int checkArrival; 
+		int timeShortest = 8000;
+		bool found = false; 
+		for (int i = 0; i < size; i++)
+		{	
+			//if the next process arrives before the current process finish running, THEN push_back(new process) & pause when new process arrives
+			if ((arrived[0].getTimeRemain() + elapsedTime) > p[i].getATime())
+			{
+				if(p[i].getATime() < timeShortest)
+				{
+					timeShortest = p[i].getATime(); 
+				}
+				found = true;
+			}
 		}
 
-		sortPriority(arrived);
-		//////compare priority of current and new
-		//////if new.getP < current.getP, THEN run new
-//		finished.push_back(p[i]);
-//		arrived.pop_back(p[i]);
+		if(found == true)
+		{ 
+			arrived[0].setTimeRemain(elapsedTime - arrived[0].getcTime());	// set the remain time for current process
+			elapsedTime = elapsedTime - arrived[0].getTimeRemain(); 
+			for(int i = 0; i < size; i ++)
+			{ 
+				if(p[i].getATime() == timeShortest) 
+				{
+					arrived.push_back(p[i]);
+				}
+			}
+			sortPriority(arrived);
+		}
+		for(int i = 0; i < arrived.size(); i++)
+		{
+			if (arrived[i].getTimeRemain() != 0)
+			{
+				if(firstTime != true && store != arrived[i].getpId())
+				{ 
+					elapsedTime = totalElapsedTime(elapsedTime);
+					printContextSwitch(elapsedTime, store, arrived[i].getpId()); 
+					elapsedTime = totalElapsedTime(elapsedTime);
+					arrived[i].setWaitTime(elapsedTime-arrived[i].getcTime());
+				}
+				if (arrived[i].getcTime() == arrived[i].getTimeRemain())
+				{
+					arrived[i].setWaitTime(elapsedTime);
+					printFirst(elapsedTime, arrived[i].getpId(), arrived[i].getWaitTime());	
+				}
+				
+				//arrived[i].setTimeRemain(0);
+				elapsedTime = elapsedTime + arrived[i].getcTime() - arrived[i].getTimeRemain();
+				if (arrived[i].getTimeRemain() < 0)				// if remain time == 0, print "terminate"
+				{
+					//int check = timeSlice + arrived[j].getTimeRemain(); // Checks to see if the program terminated before the timeslice
+					
+					
+					arrived[i].setTimeRemain(0); 					//sets the time to 0
+					arrived[i].setTurnTime(elapsedTime);
+					printTerminate(elapsedTime, arrived[i].getpId(), arrived[i].getTurnTime(), arrived[i].getWaitTime()); 
+					counter++; 								// This processes is now added to the "ended" counter 
+				}
+
+				store = arrived[i].getpId(); 
+			}
+			counter++;
+			firstTime = false; 
+		}
 	}
 	
 	
@@ -553,18 +568,18 @@ void dataToCollect(Sim* p, int size, int minTurnAround, int maxTurnAround, int t
 	cout << setprecision (3) <<endl;
 
 	cout << "\n\n\n"; 
-	cout << "Minimum Turn Around Time: " << minTurnAround << "\n"; 
-	cout << "Maximum Turn Around Time: " << maxTurnAround << "\n"; 
+	cout << "Minimum Turn Around Time: " << (double)minTurnAround << "\n"; 
+	cout << "Maximum Turn Around Time: " << (double)maxTurnAround << "\n"; 
 	tempTime = (double)turnTotal/(double)size; 
 	cout << "Average Turn Around Time: " << tempTime << "\n\n";
 
-	cout << "Minimum Initial Wait Time: " << minInitialWait << "\n"; 
-	cout << "Maximum Initial Wait Time: " << maxInitialWait << "\n"; 
+	cout << "Minimum Initial Wait Time: " << (double)minInitialWait << "\n"; 
+	cout << "Maximum Initial Wait Time: " << (double)maxInitialWait << "\n"; 
 	tempTime = (double)initialTotal/(double)size; 
 	cout << "Average Initial Wait Time: " << tempTime << "\n\n";
 
-	cout << "Minimum Wait Time: " << minWaitTime << "\n"; 
-	cout << "Maximum Wait Time: " << maxWaitTime << "\n"; 
+	cout << "Minimum Wait Time: " << (double)minWaitTime << "\n"; 
+	cout << "Maximum Wait Time: " << (double)maxWaitTime << "\n"; 
 	tempTime = (double)totalWait/(double)size; 
 	cout << "Average Wait Time: " << tempTime << "\n\n";
 
