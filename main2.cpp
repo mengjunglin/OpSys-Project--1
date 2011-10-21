@@ -416,7 +416,7 @@ void pp(Sim* p, int size)
 			sortPriority(arrived); 
 			elapsedTime+=temp.getTimeRemain();  // final elapsed time after this process terminates
 			temp.setTurnTime(elapsedTime);
-			printTerminate(elapsedTime, time.getpId(), temp.getTurnTime(), temp.getWaitTime()); 
+			printTerminate(elapsedTime, temp.getpId(), temp.getTurnTime(), temp.getWaitTime()); 
 			counter++; 	
 		}	
 		if (!firstTime && !arrived.empty( ))
@@ -427,26 +427,6 @@ void pp(Sim* p, int size)
 		} 
 		firstTime = false; 
 	}
-}
-	
-	
-	/*
-	for(int j = 0; j < size; j++) 
-	{ 
-		if (j != 0)
-		{
-			elapsedTime = totalElapsedTime(elapsedTime); 
-			printContextSwitch(elapsedTime, pSorted[j-1].getpId(), pSorted[j].getpId());	
-			elapsedTime = totalElapsedTime(elapsedTime); 
-		} 
-		pSorted[j].setWaitTime(elapsedTime);
-		printFirst(elapsedTime, pSorted[j].getpId(), pSorted[j].getWaitTime());	
-		elapsedTime+=pSorted[j].getcTime(); 
-		pSorted[j].setTurnTime(elapsedTime);
-		printTerminate(elapsedTime, pSorted[j].getpId(), pSorted[j].getTurnTime(), pSorted[j].getWaitTime()); 
-	} 
-	*/
-	//dataToCollect(pSorted, size, minTurn, maxTurn, turnT, minInitial, maxInitial, initialT, minWait, maxWait, totalW);
 }
 
 void sortPriority(vector<Sim> &a){
