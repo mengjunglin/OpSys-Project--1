@@ -32,6 +32,8 @@ the code will run just fine without this option but it is helpful if you wish to
 
 
 
+
+
 Part 1: 
 --------------------------------------
 main.cpp & classSim.h 
@@ -49,8 +51,39 @@ Prints minimum, average, and maximum total wait times
 
 All to three decimal places
 
+This part compiles without errors/crashes/warnings, simulates the five scheduling algorithms and has the prints explained above. 
+
+
+For this part, since there are no processes that arrive at any time other than zero the information for sjf and psjf will be the exact same. 
+
 
 
 Part 2: 
 --------------------------------------
 main2.cpp & classSim2.h
+
+***** There is an infinite loop in PP, however the code is almost complete this code can be interchanged with PSJF just by adding CPU time instead of priority time. 
+
+Since this is a pure simulation all the processes are noted at time 0 even though they do not arrive until their arrival time our functions know about them. That means we are able to do comparisons without having to "flag" that a new process was created at a different arrival time.
+Because there is preemption the algorithms for round robin & preemptive shortest job first change significantly.
+
+Changes to the algorithms to account for arrivals at different times: 
+
+fcfs: The processes need to be sorted based on their arrival times. Since htis is a first come first serve algorithm the only thing taken into account is when the process entered the "queue" therefore the arrival time is the only important number. 
+
+sjf: This process simulation takes arrival time and required CPU time into accounts. Processes that arrive before the current process finish running will be pushed into the queue, the queue will then be sorted according to required CPU time. After the current process finish running, the process will be poped out the queue, then the next process in the queue will enter the CPU and run.
+
+psjf: This will act similar to the pp but with a comparison to the CPU
+
+rr: This process simulation is similar to fcfs. All process that has arrived will be pushed into the queue, and we do rr within the queue, instead of the actual array of processes in part one.
+
+pp: Similar to sjf, the process will enter the queue once it arrives. The process in the queue will be sorted in priority. If a process arrives with a higher priority while the current process is running, the current process will be cut off, and the new arrived process will be running. If new arrived process has a lower priority, the process will be stored in the queue.
+
+
+
+
+
+
+
+
+
