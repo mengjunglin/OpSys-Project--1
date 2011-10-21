@@ -88,11 +88,7 @@ int main(int argc, char * argv[])
 		//psjf(pArr, n); 
 		//rr(pArr, n); 
 		pp(pArr, n); 
-	}
-	/* 1. Process creation (display the process ID, required CPU time, and priority, if applicable) - DONE for FCFS, DONE for SJF
-	 * 2. Context switch (display the two before/after process IDs involved) - DONE for FCFS, DONE for SJF
-	 * 3. Process's first CPU usage (display the process ID and initial wait time) - DONE for FCFS, DONE for SJF
-	 * 4. Process termination (display the process ID, its turnaround time, and its total wait time) - DONE for FCFS, DONE for SJF */ 
+	} 
 
 	filestr.close();
 
@@ -131,11 +127,7 @@ Sim* createProcesses(const int size){
 		pA[i].setTurnTime( eTemp );
 		pA[i].setTimeRemain( pA[i].getcTime() );
 	}
-	//for (int d = 0; d < size; d++)
-	//{
-	//	cout << "***CPU Time is " << pA[d].getcTime() << " and timeRemain is " << pA[d].getTimeRemain() << endl;
-	//}
-	
+
 	temp = size * .25;  //sets temp to 25% of all processes with a decimal that gets chopped off 
 	for(i = 0; i < temp; i ++){ pA[i].setATime(0); } // sets the first 25% to 0 arrival time
 	
@@ -372,14 +364,7 @@ void pp(Sim* p, int size)
 
 	elapsedTime = 0;
 
-	for (int i = 0; i < size; i++)
-	{
-		cout << "Process " << p[i].getpId() << " has a priority of " << p[i].getP() << endl;
-	}
-
 	cout << "\n\n\nPreemptive-Priority | Send Processes to CPU and run: \n";
-
-
 	//push process into the vector if the arrival time is 0
 	for (int i = 0; i < size; i++)
 	{
@@ -397,10 +382,11 @@ void pp(Sim* p, int size)
 		int checkArrival; 
 		int timeShortest = 8000;
 		bool found = false; 
+		Sim temp = arrived[0];
 		for (int i = 0; i < size; i++)
 		{	
-			//if the next process arrives before the current process finish running, THEN push_back(new process) & pause when new process arrives
-			if ((arrived[0].getTimeRemain() + elapsedTime) > p[i].getATime())
+			checkArrival = arrived[0].getTimeRemain() + elapsedTime; 
+			if (checkArrival > p[i].getATime())
 			{
 				if(p[i].getATime() < timeShortest)
 				{
@@ -409,7 +395,6 @@ void pp(Sim* p, int size)
 				found = true;
 			}
 		}
-
 		if(found == true)
 		{ 
 			arrived[0].setTimeRemain(elapsedTime - arrived[0].getcTime());	// set the remain time for current process
@@ -423,42 +408,26 @@ void pp(Sim* p, int size)
 			}
 			sortPriority(arrived);
 		}
-		for(int i = 0; i < arrived.size(); i++)
+		else // the process has terminated before any other process entered 
+		{ 
+			arrived[0].setTimeRemain(0); 
+			temp = arrived[0]; 
+			arrived.erase(arrived.begin());
+			sortPriority(arrived); 
+			elapsedTime+=temp.getTimeRemain();  // final elapsed time after this process terminates
+			temp.setTurnTime(elapsedTime);
+			printTerminate(elapsedTime, time.getpId(), temp.getTurnTime(), temp.getWaitTime()); 
+			counter++; 	
+		}	
+		if (!firstTime && !arrived.empty( ))
 		{
-			if (arrived[i].getTimeRemain() != 0)
-			{
-				if(firstTime != true && store != arrived[i].getpId())
-				{ 
-					elapsedTime = totalElapsedTime(elapsedTime);
-					printContextSwitch(elapsedTime, store, arrived[i].getpId()); 
-					elapsedTime = totalElapsedTime(elapsedTime);
-					arrived[i].setWaitTime(elapsedTime-arrived[i].getcTime());
-				}
-				if (arrived[i].getcTime() == arrived[i].getTimeRemain())
-				{
-					arrived[i].setWaitTime(elapsedTime);
-					printFirst(elapsedTime, arrived[i].getpId(), arrived[i].getWaitTime());	
-				}
-				
-				//arrived[i].setTimeRemain(0);
-				elapsedTime = elapsedTime + arrived[i].getcTime() - arrived[i].getTimeRemain();
-				if (arrived[i].getTimeRemain() < 0)				// if remain time == 0, print "terminate"
-				{
-					//int check = timeSlice + arrived[j].getTimeRemain(); // Checks to see if the program terminated before the timeslice
-					
-					
-					arrived[i].setTimeRemain(0); 					//sets the time to 0
-					arrived[i].setTurnTime(elapsedTime);
-					printTerminate(elapsedTime, arrived[i].getpId(), arrived[i].getTurnTime(), arrived[i].getWaitTime()); 
-					counter++; 								// This processes is now added to the "ended" counter 
-				}
-
-				store = arrived[i].getpId(); 
-			}
-			counter++;
-			firstTime = false; 
-		}
+			elapsedTime = totalElapsedTime(elapsedTime); 
+			printContextSwitch(elapsedTime, temp.getpId(), arrived[0].getpId());			
+			elapsedTime = totalElapsedTime(elapsedTime);  
+		} 
+		firstTime = false; 
 	}
+}
 	
 	
 	/*
